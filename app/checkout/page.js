@@ -118,13 +118,13 @@ export default function CheckoutPage() {
         return null;
     }
 
-    const shippingCost = cart.total >= 10000 ? 0 : 500;
+    const shippingCost = cart.total >= 7000 ? 0 : 500;
     const total = cart.total + shippingCost;
 
     return (
         <div className="py-12 px-4">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-8">Checkout</h1>
+                <h1 className="text-3xl md:text-4xl fon t-bold text-neutral-900 mb-8">Checkout</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Checkout Form */}
