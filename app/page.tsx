@@ -15,24 +15,109 @@ export const metadata = {
 export default function Home() {
   return (
     <div>
-      <section className="relative h-[600px] flex items-center justify-center bg-gradient-to-br from-neutral-900 to-neutral-800 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-30"></div>
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
-            Timeless Style,<br />Modern Craftsmanship
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-neutral-200 max-w-2xl mx-auto">
-            Discover premium watches, belts, and wallets designed for those who appreciate quality and elegance.
-          </p>
-          <Link
-            href="/watches"
-            className="inline-flex items-center gap-2 bg-white text-neutral-900 px-8 py-4 rounded-lg font-semibold hover:bg-neutral-100 transition-colors text-lg"
-          >
-            Shop Collection
-            <ArrowRight className="h-5 w-5" />
-          </Link>
+      {/* PARALLAX HERO SECTION (Enhanced) */}
+      <section
+        className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden bg-black"
+      >
+        {/* Deep overlay for contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
+
+        {/* Floating bokeh particles - Increased + softer */}
+        <div className="pointer-events-none absolute inset-0 opacity-50">
+          {/* Big soft particles */}
+          <div className="absolute top-1/4 left-1/4 w-16 h-16 rounded-full bg-white/5 blur-[40px] animate-[float_12s_ease-in-out_infinite]" />
+          <div className="absolute top-1/3 right-1/3 w-20 h-20 rounded-full bg-white/10 blur-[50px] animate-[float_10s_ease-in-out_infinite]" />
+
+          {/* Medium */}
+          <div className="absolute bottom-1/4 left-1/3 w-4 h-4 rounded-full bg-white/25 blur-[6px] animate-[float_6s_ease-in-out_infinite]" />
+          <div className="absolute top-1/2 right-1/4 w-5 h-5 rounded-full bg-white/30 blur-[7px] animate-[float_7s_ease-in-out_infinite]" />
+
+          {/* Small premium particles */}
+          <div className="absolute top-10 left-1/2 w-2 h-2 rounded-full bg-white/40 blur-[2px] animate-[float_4s_ease-in-out_infinite]" />
+          <div className="absolute bottom-10 right-1/3 w-2 h-2 rounded-full bg-white/30 blur-[2px] animate-[float_5s_ease-in-out_infinite]" />
+          <div className="absolute top-1/3 left-1/5 w-1.5 h-1.5 rounded-full bg-white/20 blur-[2px] animate-[float_6s_ease-in-out_infinite]" />
         </div>
+
+        {/* Glass Card */}
+        <div
+          className="
+      relative z-10 px-6 md:px-10 py-10 md:py-12 
+      rounded-2xl backdrop-blur-2xl bg-white/10 border border-white/20 
+      shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] 
+      max-w-lg md:max-w-2xl mx-auto text-center text-white
+    "
+        >
+          {/* Smoother glow halo */}
+          <div className="pointer-events-none absolute -inset-1 rounded-2xl bg-gradient-to-br from-white/20 via-transparent to-white/10 blur-xl opacity-60" />
+
+          <h1
+            className="relative text-4xl md:text-6xl font-bold leading-tight drop-shadow-lg 
+      opacity-0 animate-fade-in-up"
+          >
+            Timeless Style,
+            <br /> Modern Craftsmanship
+          </h1>
+
+          <p
+            className="relative text-base md:text-lg mt-4 md:mt-5 opacity-90 drop-shadow-md 
+      opacity-0 animate-fade-in-up [animation-delay:150ms]"
+          >
+            Discover premium watches, belts, and wallets designed to elevate your everyday look.
+          </p>
+
+          {/* Button */}
+          <div className="relative mt-6 md:mt-8 flex items-center justify-center">
+            <Link
+              href="/watches"
+              className="group relative px-6 md:px-8 py-3 rounded-xl bg-white/15 border border-white/30 
+        text-white font-semibold shadow-lg backdrop-blur-2xl 
+        hover:bg-white/25 transition-colors inline-flex items-center gap-2 overflow-hidden 
+        opacity-0 animate-fade-in-up [animation-delay:300ms]"
+            >
+              {/* Shine effect */}
+              <span
+                className="pointer-events-none absolute inset-0 -translate-x-full 
+          bg-gradient-to-r from-transparent via-white/40 to-transparent 
+          group-hover:translate-x-full transition-transform duration-700"
+              />
+              Shop Collection
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+
+          {/* Trust badges */}
+          <div
+            className="mt-5 md:mt-6 flex items-center justify-center gap-4 md:gap-5 
+      text-white/80 text-xs md:text-sm 
+      opacity-0 animate-fade-in-up [animation-delay:450ms]"
+          >
+            <span className="inline-flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+              Premium Shopping
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              Secure Checkout
+            </span>
+          </div>
+        </div>
+
+        {/* Keyframes */}
+        <style>{`
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @keyframes fade-in-up {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0px); }
+    }
+  `}</style>
       </section>
+
+
 
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
