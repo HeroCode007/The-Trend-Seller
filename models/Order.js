@@ -50,6 +50,16 @@ const OrderSchema = new mongoose.Schema(
             enum: ['pending', 'awaiting_verification', 'paid', 'failed'],
             default: 'pending',
         },
+        
+        // 📸 Payment screenshot for manual verification
+        paymentScreenshot: {
+            type: String,
+            default: '',
+        },
+        paymentScreenshotUploadedAt: {
+            type: Date,
+            default: null,
+        },
 
         // 🚚 Order processing status
         status: {

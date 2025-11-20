@@ -118,9 +118,10 @@ export default function OrderConfirmationPage() {
                                     <span className={`font-semibold capitalize ${order.paymentStatus === 'paid' ? 'text-green-600' :
                                         order.paymentStatus === 'pending' ? 'text-amber-600' :
                                             order.paymentStatus === 'failed' ? 'text-red-600' :
+                                                order.paymentStatus === 'awaiting_verification' ? 'text-blue-600' :
                                                 'text-neutral-900'
                                         }`}>
-                                        {order.paymentStatus}
+                                        {order.paymentStatus === 'awaiting_verification' ? 'Awaiting Verification' : order.paymentStatus}
                                     </span>
                                 </div>
                             )}

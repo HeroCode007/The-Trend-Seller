@@ -159,13 +159,13 @@ export default function CartPage() {
                                 <div className="flex justify-between text-neutral-600">
                                     <span>Shipping</span>
                                     <span className={cart.total >= 10000 ? 'text-green-600' : ''}>
-                                        {cart.total >= 10000 ? 'Free' : '₨500'}
+                                        {cart.total >= 10000 ? 'Free' : '₨250'}
                                     </span>
                                 </div>
                                 <div className="border-t border-neutral-200 pt-4">
                                     <div className="flex justify-between text-xl font-bold text-neutral-900">
                                         <span>Total</span>
-                                        <span>₨{(cart.total + (cart.total >= 10000 ? 0 : 500)).toLocaleString('en-PK')}</span>
+                                        <span>₨{(cart.total + (cart.total >= 10000 ? 0 : 250)).toLocaleString('en-PK')}</span>
                                     </div>
                                 </div>
                             </div>

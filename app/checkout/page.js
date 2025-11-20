@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, CreditCard, Wallet, Banknote, Smartphone, Globe } from 'lucide-react';
+import { Loader2, CheckCircle, Banknote, Smartphone, Wallet } from 'lucide-react';
 
 export default function CheckoutPage() {
     const { cart, loading, fetchCart } = useCart();
@@ -19,15 +19,18 @@ export default function CheckoutPage() {
         city: '',
         postalCode: '',
         country: 'Pakistan',
-        paymentMethod: 'cod', // Default to Cash on Delivery
+        paymentMethod: 'bank-transfer', // Default to Bank Transfer
     });
 
     useEffect(() => {
         fetchCart();
+    }, []);
+
+    useEffect(() => {
         if (!loading && cart.items.length === 0) {
             router.push('/cart');
         }
-    }, [loading, cart.items.length]);
+    }, [loading]);
 
     const handleChange = (e) => {
         setFormData({
@@ -41,6 +44,16 @@ export default function CheckoutPage() {
         setSubmitting(true);
 
         try {
+            if (!['bank-transfer', 'jazzcash', 'easypaisa'].includes(formData.paymentMethod)) {
+                toast({
+                    title: 'Invalid Payment Method',
+                    description: 'Please select a valid payment method.',
+                    variant: 'destructive',
+                });
+                setSubmitting(false);
+                return;
+            }
+
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,25 +83,17 @@ export default function CheckoutPage() {
                 return;
             }
 
-            const { paymentUrl, orderNumber, totalAmount } = data.order;
+            const { orderNumber } = data.order;
 
-            // For JazzCash or EasyPaisa, redirect user
-            if ((formData.paymentMethod === 'jazzcash' || formData.paymentMethod === 'easypaisa') && paymentUrl) {
+            // For JazzCash or EasyPaisa, redirect to payment verification page
+            if (formData.paymentMethod === 'jazzcash' || formData.paymentMethod === 'easypaisa' || formData.paymentMethod === 'bank-transfer') {
                 toast({
                     title: 'Redirecting...',
-                    description: `You will be redirected to ${formData.paymentMethod} to complete payment of ₨${totalAmount}`,
+                    description: `Proceeding to ${formData.paymentMethod} payment verification`,
                 });
-                // Redirect to payment gateway
-                window.location.href = paymentUrl;
+                router.push(`/payment-verification/${orderNumber}?method=${formData.paymentMethod}`);
                 return;
             }
-
-            // For COD or bank transfer, show confirmation page
-            toast({
-                title: 'Order Placed!',
-                description: `Order #${orderNumber} placed successfully.`,
-            });
-            router.push(`/orders/${orderNumber}`);
 
         } catch (error) {
             console.error('Order Error:', error);
@@ -102,29 +107,28 @@ export default function CheckoutPage() {
         }
     };
 
-
-
     if (loading) {
         return (
             <div className="py-12 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center">Loading...</div>
+                    <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                        Loading your cart...
+                    </div>
                 </div>
             </div>
         );
     }
 
-    if (cart.items.length === 0) {
-        return null;
-    }
+    if (cart.items.length === 0) return null;
 
-    const shippingCost = cart.total >= 7000 ? 0 : 500;
+    const shippingCost = cart.total >= 7000 ? 0 : 250;
     const total = cart.total + shippingCost;
 
     return (
         <div className="py-12 px-4">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl md:text-4xl fon t-bold text-neutral-900 mb-8">Checkout</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-8">Checkout</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Checkout Form */}
@@ -242,130 +246,11 @@ export default function CheckoutPage() {
                             {/* Payment Method Selection */}
                             <div>
                                 <h2 className="text-xl font-semibold text-neutral-900 mb-4">Payment Method</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Cash on Delivery */}
-                                    <label
-                                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'cod'
-                                            ? 'border-amber-600 bg-amber-50'
-                                            : 'border-neutral-300 hover:border-neutral-400'
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="cod"
-                                            checked={formData.paymentMethod === 'cod'}
-                                            onChange={handleChange}
-                                            className="sr-only"
-                                        />
-                                        <div className="flex items-center gap-3">
-                                            <Banknote className="h-6 w-6 text-neutral-700" />
-                                            <div>
-                                                <div className="font-semibold text-neutral-900">Cash on Delivery</div>
-                                                <div className="text-sm text-neutral-600">Pay when you receive</div>
-                                            </div>
-                                        </div>
-                                        {formData.paymentMethod === 'cod' && (
-                                            <div className="absolute top-2 right-2 w-5 h-5 bg-amber-600 rounded-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </label>
-
-                                    {/* Credit/Debit Card */}
-                                    <label
-                                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'card'
-                                            ? 'border-amber-600 bg-amber-50'
-                                            : 'border-neutral-300 hover:border-neutral-400'
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="card"
-                                            checked={formData.paymentMethod === 'card'}
-                                            onChange={handleChange}
-                                            className="sr-only"
-                                        />
-                                        <div className="flex items-center gap-3">
-                                            <CreditCard className="h-6 w-6 text-neutral-700" />
-                                            <div>
-                                                <div className="font-semibold text-neutral-900">Credit/Debit Card</div>
-                                                <div className="text-sm text-neutral-600">Visa, Mastercard</div>
-                                            </div>
-                                        </div>
-                                        {formData.paymentMethod === 'card' && (
-                                            <div className="absolute top-2 right-2 w-5 h-5 bg-amber-600 rounded-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </label>
-
-                                    {/* JazzCash */}
-                                    <label
-                                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'jazzcash'
-                                            ? 'border-amber-600 bg-amber-50'
-                                            : 'border-neutral-300 hover:border-neutral-400'
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="jazzcash"
-                                            checked={formData.paymentMethod === 'jazzcash'}
-                                            onChange={handleChange}
-                                            className="sr-only"
-                                        />
-                                        <div className="flex items-center gap-3">
-                                            <Smartphone className="h-6 w-6 text-neutral-700" />
-                                            <div>
-                                                <div className="font-semibold text-neutral-900">JazzCash</div>
-                                                <div className="text-sm text-neutral-600">Mobile wallet</div>
-                                            </div>
-                                        </div>
-                                        {formData.paymentMethod === 'jazzcash' && (
-                                            <div className="absolute top-2 right-2 w-5 h-5 bg-amber-600 rounded-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </label>
-
-                                    {/* EasyPaisa */}
-                                    <label
-                                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'easypaisa'
-                                            ? 'border-amber-600 bg-amber-50'
-                                            : 'border-neutral-300 hover:border-neutral-400'
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="easypaisa"
-                                            checked={formData.paymentMethod === 'easypaisa'}
-                                            onChange={handleChange}
-                                            className="sr-only"
-                                        />
-                                        <div className="flex items-center gap-3">
-                                            <Wallet className="h-6 w-6 text-neutral-700" />
-                                            <div>
-                                                <div className="font-semibold text-neutral-900">EasyPaisa</div>
-                                                <div className="text-sm text-neutral-600">Mobile wallet</div>
-                                            </div>
-                                        </div>
-                                        {formData.paymentMethod === 'easypaisa' && (
-                                            <div className="absolute top-2 right-2 w-5 h-5 bg-amber-600 rounded-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </label>
-
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {/* Bank Transfer */}
-                                    <label
-                                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'bank-transfer'
-                                            ? 'border-amber-600 bg-amber-50'
-                                            : 'border-neutral-300 hover:border-neutral-400'
-                                            }`}
-                                    >
+                                    <label className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'bank-transfer'
+                                        ? 'border-amber-600 bg-amber-50'
+                                        : 'border-neutral-300 hover:border-neutral-400'}`}>
                                         <input
                                             type="radio"
                                             name="paymentMethod"
@@ -381,81 +266,71 @@ export default function CheckoutPage() {
                                                 <div className="text-sm text-neutral-600">Direct bank transfer</div>
                                             </div>
                                         </div>
-                                        {formData.paymentMethod === 'bank-transfer' && (
-                                            <div className="absolute top-2 right-2 w-5 h-5 bg-amber-600 rounded-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                            </div>
-                                        )}
                                     </label>
 
-                                    {/* PayFast */}
-                                    <label
-                                        className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'payfast'
-                                            ? 'border-amber-600 bg-amber-50'
-                                            : 'border-neutral-300 hover:border-neutral-400'
-                                            }`}
-                                    >
+                                    {/* JazzCash */}
+                                    <label className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'jazzcash'
+                                        ? 'border-green-600 bg-green-50'
+                                        : 'border-neutral-300 hover:border-neutral-400'}`}>
                                         <input
                                             type="radio"
                                             name="paymentMethod"
-                                            value="payfast"
-                                            checked={formData.paymentMethod === 'payfast'}
+                                            value="jazzcash"
+                                            checked={formData.paymentMethod === 'jazzcash'}
                                             onChange={handleChange}
                                             className="sr-only"
                                         />
                                         <div className="flex items-center gap-3">
-                                            <Globe className="h-6 w-6 text-neutral-700" />
+                                            <Smartphone className="h-6 w-6 text-neutral-700" />
                                             <div>
-                                                <div className="font-semibold text-neutral-900">PayFast</div>
-                                                <div className="text-sm text-neutral-600">Secure online payment</div>
+                                                <div className="font-semibold text-neutral-900">JazzCash</div>
+                                                <div className="text-sm text-neutral-600">Mobile Wallet</div>
                                             </div>
                                         </div>
-                                        {formData.paymentMethod === 'payfast' && (
-                                            <div className="absolute top-2 right-2 w-5 h-5 bg-amber-600 rounded-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    </label>
+
+                                    {/* EasyPaisa */}
+                                    <label className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'easypaisa'
+                                        ? 'border-green-600 bg-green-50'
+                                        : 'border-neutral-300 hover:border-neutral-400'}`}>
+                                        <input
+                                            type="radio"
+                                            name="paymentMethod"
+                                            value="easypaisa"
+                                            checked={formData.paymentMethod === 'easypaisa'}
+                                            onChange={handleChange}
+                                            className="sr-only"
+                                        />
+                                        <div className="flex items-center gap-3">
+                                            <Wallet className="h-6 w-6 text-neutral-700" />
+                                            <div>
+                                                <div className="font-semibold text-neutral-900">EasyPaisa</div>
+                                                <div className="text-sm text-neutral-600">Mobile Wallet</div>
                                             </div>
-                                        )}
+                                        </div>
                                     </label>
                                 </div>
 
                                 {/* Payment Method Info */}
-                                {formData.paymentMethod === 'cod' && (
-                                    <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                        <p className="text-sm text-amber-800">
-                                            <strong>Cash on Delivery:</strong> Pay with cash when your order is delivered.
-                                            Please have exact change ready.
-                                        </p>
-                                    </div>
-                                )}
-                                {formData.paymentMethod === 'card' && (
-                                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <p className="text-sm text-blue-800">
-                                            <strong>Card Payment:</strong> You will be redirected to a secure payment gateway
-                                            to complete your transaction.
-                                        </p>
-                                    </div>
-                                )}
-                                {(formData.paymentMethod === 'jazzcash' || formData.paymentMethod === 'easypaisa') && (
-                                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                        <p className="text-sm text-green-800">
-                                            <strong>Mobile Wallet:</strong> Payment instructions will be sent to your phone number
-                                            after order confirmation.
-                                        </p>
-                                    </div>
-                                )}
                                 {formData.paymentMethod === 'bank-transfer' && (
                                     <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                                         <p className="text-sm text-purple-800">
-                                            <strong>Bank Transfer:</strong> Bank account details will be sent to your email
-                                            after order confirmation. Please complete the transfer within 24 hours.
+                                            Bank account details will be sent to your email after order confirmation.
+                                            Please complete the transfer within 24 hours.
                                         </p>
                                     </div>
                                 )}
-                                {formData.paymentMethod === 'payfast' && (
-                                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <p className="text-sm text-blue-800">
-                                            <strong>PayFast:</strong> You will be redirected to PayFast's secure payment gateway
-                                            to complete your transaction. We accept all major credit and debit cards.
+                                {formData.paymentMethod === 'jazzcash' && (
+                                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                        <p className="text-sm text-green-800">
+                                            Payment instructions will be sent to your phone number after order confirmation.
+                                        </p>
+                                    </div>
+                                )}
+                                {formData.paymentMethod === 'easypaisa' && (
+                                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                        <p className="text-sm text-green-800">
+                                            Payment instructions will be sent to your phone number after order confirmation.
                                         </p>
                                     </div>
                                 )}
@@ -524,4 +399,3 @@ export default function CheckoutPage() {
         </div>
     );
 }
-

@@ -114,7 +114,7 @@ export default function WalletDetailPage({ params }) {
                 </h3>
                 <p className="text-sm text-neutral-600">
                   All our wallets feature RFID protection and premium leather
-                  construction. Free shipping on orders over ₨10,000. Returns accepted
+                  construction. Returns accepted
                   within 30 days.
                 </p>
               </div>
