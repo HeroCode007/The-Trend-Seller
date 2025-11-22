@@ -9,25 +9,35 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://timelystore.com'),
+  metadataBase: new URL('https://www.thetrendseller.com/'),
   title: {
     default: 'The Trend Seller - Premium Watches, Belts & Wallets',
-    template: '%s | The Trend Seller'
+    template: '%s | The Trend Seller',
   },
-  description: 'Discover premium watches, belts, and wallets. Quality craftsmanship and timeless style for the modern individual.',
-  keywords: ['watches', 'belts', 'wallets', 'luxury accessories', 'leather goods', 'timepieces'],
+  description:
+    'Discover premium watches, belts, and wallets. Quality craftsmanship and timeless style for the modern individual.',
+  keywords: [
+    'watches',
+    'belts',
+    'wallets',
+    'luxury accessories',
+    'leather goods',
+    'timepieces',
+  ],
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://timelystore.com',
+    url: 'https://www.thetrendseller.com/',
     title: 'The Trend Seller - Premium Watches, Belts & Wallets',
-    description: 'Discover premium watches, belts, and wallets. Quality craftsmanship and timeless style for the modern individual.',
+    description:
+      'Discover premium watches, belts, and wallets. Quality craftsmanship and timeless style for the modern individual.',
     siteName: 'The Trend Seller',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'The Trend Seller - Premium Watches, Belts & Wallets',
-    description: 'Discover premium watches, belts, and wallets. Quality craftsmanship and timeless style for the modern individual.',
+    description:
+      'Discover premium watches, belts, and wallets. Quality craftsmanship and timeless style for the modern individual.',
   },
   robots: {
     index: true,
@@ -45,9 +55,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <CartProvider>
           <Header />
-          <main className="min-h-screen">
-            {children}
-          </main>
+          <main className="min-h-screen">{children}</main>
           <Footer />
           <Toaster />
         </CartProvider>

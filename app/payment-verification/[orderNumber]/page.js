@@ -416,7 +416,7 @@ export default function PaymentVerificationPage({ params }) {
                         </p>
                         <p className="text-sm">
                             <strong>Phone:</strong>{' '}
-                            <a href="tel:+923001234567" className="text-blue-600 hover:underline">
+                            <a href="tel:0323-4653567" className="text-blue-600 hover:underline">
                                 0323-4653567
                             </a>
                         </p>

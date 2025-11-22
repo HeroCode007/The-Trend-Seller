@@ -35,7 +35,7 @@ const OrderSchema = new mongoose.Schema(
         paymentMethod: {
             type: String,
             required: true,
-            enum: ['cod', 'jazzcash', 'easypaisa', 'bank-transfer'],
+            enum: ['cod', 'jazzcash', 'easypaisa', 'bank'],
         },
         paymentNote: {
             type: String,
@@ -50,7 +50,7 @@ const OrderSchema = new mongoose.Schema(
             enum: ['pending', 'awaiting_verification', 'paid', 'failed'],
             default: 'pending',
         },
-        
+
         // 📸 Payment screenshot for manual verification
         paymentScreenshot: {
             type: String,

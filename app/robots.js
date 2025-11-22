@@ -4,6 +4,6 @@ export default function robots() {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://timelystore.com/sitemap.xml',
+    sitemap: 'https://www.thetrendseller.com//sitemap.xml',
   };
 }

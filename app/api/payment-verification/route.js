@@ -2,20 +2,28 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
 import { sendEmail } from '@/lib/email';
+import fs from 'fs';
+import path from 'path';
+
+export const config = {
+    api: {
+        bodyParser: false, // Required for file uploads
+    },
+};
 
 export async function POST(request) {
     try {
         await connectDB();
 
         const formData = await request.formData();
-        const screenshot = formData.get('screenshot');
+        const screenshotFile = formData.get('screenshot');
         const orderNumber = formData.get('orderNumber');
-        const paymentMethod = formData.get('paymentMethod'); // new field
+        const paymentMethod = formData.get('paymentMethod');
 
-        // Validate inputs
-        if (!screenshot) {
+        // --- Validation ---
+        if (!screenshotFile || !(screenshotFile instanceof File)) {
             return NextResponse.json(
-                { success: false, error: 'Screenshot is required' },
+                { success: false, error: 'Screenshot file is required' },
                 { status: 400 }
             );
         }
@@ -27,14 +35,29 @@ export async function POST(request) {
             );
         }
 
-        if (!paymentMethod) {
+        if (!paymentMethod || !['jazzcash', 'easypaisa', 'bank'].includes(paymentMethod)) {
             return NextResponse.json(
-                { success: false, error: 'Payment method is required' },
+                { success: false, error: 'Invalid payment method' },
                 { status: 400 }
             );
         }
 
-        // Find the order
+        // Check file type & size
+        if (!screenshotFile.type.startsWith('image/')) {
+            return NextResponse.json(
+                { success: false, error: 'Only image files are allowed' },
+                { status: 400 }
+            );
+        }
+
+        if (screenshotFile.size > 5 * 1024 * 1024) {
+            return NextResponse.json(
+                { success: false, error: 'File too large (max 5MB)' },
+                { status: 400 }
+            );
+        }
+
+        // --- Find the order ---
         const order = await Order.findOne({ orderNumber });
         if (!order) {
             return NextResponse.json(
@@ -43,72 +66,73 @@ export async function POST(request) {
             );
         }
 
-        // Validate payment method
-        if (!['jazzcash', 'easypaisa', 'bank'].includes(paymentMethod)) {
-            return NextResponse.json(
-                { success: false, error: 'Invalid payment method' },
-                { status: 400 }
-            );
-        }
+        // --- Save file locally ---
+        const arrayBuffer = await screenshotFile.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-        // Convert screenshot to base64
-        const bytes = await screenshot.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const base64String = buffer.toString('base64');
-        const mimeType = screenshot.type || 'image/jpeg';
-        const screenshotData = `data:${mimeType};base64,${base64String}`;
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
-        // Update order
-        order.paymentScreenshot = screenshotData;
+        const fileName = `${Date.now()}-${screenshotFile.name.replace(/\s+/g, '-')}`;
+        const filePath = path.join(uploadsDir, fileName);
+        fs.writeFileSync(filePath, buffer);
+
+        // Save relative URL in DB
+        order.paymentScreenshot = `/uploads/${fileName}`;
         order.paymentScreenshotUploadedAt = new Date();
         order.paymentStatus = 'awaiting_verification';
         order.paymentMethod = paymentMethod;
         await order.save();
 
+        // --- Send Emails ---
         const totalAmountWithDelivery = (order.totalAmount || 0) + (order.deliveryCharges || 0);
 
-        // Email to Admin
-        await sendEmail({
-            to: process.env.ADMIN_EMAIL,
-            subject: `Payment Verification Required: ${orderNumber}`,
-            html: `
-                <h2>Payment Screenshot Received</h2>
-                <p>Order Number: <strong>${order.orderNumber}</strong></p>
-                <p>Payment Method: <strong>${paymentMethod.toUpperCase()}</strong></p>
-                <p>Amount: <strong>₨${totalAmountWithDelivery}</strong></p>
-                <p>Customer: ${order.shippingAddress.fullName}</p>
-                <p>Email: ${order.shippingAddress.email}</p>
-                <p>Phone: ${order.shippingAddress.phone}</p>
-                <p>Status: <strong>Awaiting Verification</strong></p>
-                <p>Screenshot uploaded at: ${new Date(order.paymentScreenshotUploadedAt).toLocaleString()}</p>
-                <h3>Order Items:</h3>
-                <ul>
-                    ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
-                </ul>
-                <p>Delivery Charges: ₨${order.deliveryCharges || 0}</p>
-                <p><strong>Action Required:</strong> Please verify the payment screenshot and update the order status.</p>
-            `,
-        });
+        // Admin emails (support multiple emails separated by commas in .env)
+        const adminEmails = (process.env.ADMIN_EMAIL || '').split(',');
 
-        // Email to Customer
+        for (const email of adminEmails) {
+            await sendEmail({
+                to: email.trim(),
+                subject: `Payment Verification Required: ${orderNumber}`,
+                html: `
+          <h2>Payment Screenshot Received</h2>
+          <p>Order Number: <strong>${order.orderNumber}</strong></p>
+          <p>Payment Method: <strong>${paymentMethod.toUpperCase()}</strong></p>
+          <p>Amount: <strong>₨${totalAmountWithDelivery}</strong></p>
+          <p>Customer: ${order.shippingAddress.fullName}</p>
+          <p>Email: ${order.shippingAddress.email}</p>
+          <p>Phone: ${order.shippingAddress.phone}</p>
+          <p>Status: <strong>Awaiting Verification</strong></p>
+          <p>Screenshot URL: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${fileName}" target="_blank">View Screenshot</a></p>
+          <h3>Order Items:</h3>
+          <ul>
+            ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
+          </ul>
+          <p>Delivery Charges: ₨${order.deliveryCharges || 0}</p>
+          <p><strong>Action Required:</strong> Please verify the payment screenshot and update the order status.</p>
+        `,
+            });
+        }
+
+        // Email to customer
         await sendEmail({
             to: order.shippingAddress.email,
             subject: `Payment Screenshot Received: ${orderNumber}`,
             html: `
-                <h2>Thank you for your payment!</h2>
-                <p>Order Number: <strong>${order.orderNumber}</strong></p>
-                <p>Amount: <strong>₨${totalAmountWithDelivery}</strong></p>
-                <p>Payment Method: <strong>${paymentMethod.toUpperCase()}</strong></p>
-                <p>Status: <strong>Awaiting Verification</strong></p>
-                <p>We have received your payment screenshot and it is now under verification.</p>
-                <p>Our team will verify your payment and confirm your order within 24 hours.</p>
-                <h3>Order Items:</h3>
-                <ul>
-                    ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
-                </ul>
-                <p>Delivery Charges: ₨${order.deliveryCharges || 0}</p>
-                <p>Thank you for shopping with us!</p>
-            `,
+        <h2>Thank you for your payment!</h2>
+        <p>Order Number: <strong>${order.orderNumber}</strong></p>
+        <p>Amount: <strong>₨${totalAmountWithDelivery}</strong></p>
+        <p>Payment Method: <strong>${paymentMethod.toUpperCase()}</strong></p>
+        <p>Status: <strong>Awaiting Verification</strong></p>
+        <p>We have received your payment screenshot and it is now under verification.</p>
+        <p>Our team will verify your payment and confirm your order within 24 hours.</p>
+        <h3>Order Items:</h3>
+        <ul>
+          ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
+        </ul>
+        <p>Delivery Charges: ₨${order.deliveryCharges || 0}</p>
+        <p>Thank you for shopping with us!</p>
+      `,
         });
 
         return NextResponse.json({
