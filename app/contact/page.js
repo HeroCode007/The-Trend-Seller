@@ -53,8 +53,8 @@ export default function ContactPage() {
                   <h3 className="font-semibold text-neutral-900 mb-1">Phone</h3>
                   <ul className="text-neutral-600 space-y-1">
                     <li>
-                      <a href="tel:0322-7032219" className="hover:text-neutral-900">
-                        0322-7032219
+                      <a href="tel:0315-6120078" className="hover:text-neutral-900">
+                        0315-6120078
                       </a>
                     </li>
                     <li>
