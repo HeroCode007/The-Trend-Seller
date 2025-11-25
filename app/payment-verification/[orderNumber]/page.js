@@ -1,14 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, Upload, AlertCircle, Copy, Check } from 'lucide-react';
 
 export default function PaymentVerificationPage({ params }) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const { orderNumber } = params;
+
+    // Allowed payment methods
+    const allowedMethods = ['jazzcash', 'easypaisa', 'bank'];
+    const selectedMethod = searchParams.get('paymentMethod');
+    const initialPaymentMethod = allowedMethods.includes(selectedMethod) ? selectedMethod : 'jazzcash';
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -17,7 +23,7 @@ export default function PaymentVerificationPage({ params }) {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [copiedName, setCopiedName] = useState(false);
     const [copiedNumber, setCopiedNumber] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('jazzcash');
+    const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod);
 
     // Payment account details
     const paymentAccounts = {
@@ -50,6 +56,7 @@ export default function PaymentVerificationPage({ params }) {
 
     const accountDetails = paymentAccounts[paymentMethod];
 
+    // Fetch order data
     useEffect(() => {
         fetchOrder();
     }, [orderNumber]);
@@ -82,51 +89,37 @@ export default function PaymentVerificationPage({ params }) {
         }
     };
 
+    // Handle file selection
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            toast({
-                title: 'Invalid File',
-                description: 'Please upload an image file',
-                variant: 'destructive',
-            });
+            toast({ title: 'Invalid File', description: 'Please upload an image file', variant: 'destructive' });
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            toast({
-                title: 'File Too Large',
-                description: 'Please upload an image smaller than 5MB',
-                variant: 'destructive',
-            });
+            toast({ title: 'File Too Large', description: 'Please upload an image smaller than 5MB', variant: 'destructive' });
             return;
         }
 
         setScreenshot(file);
-
         const reader = new FileReader();
-        reader.onloadend = () => {
-            setPreviewUrl(reader.result);
-        };
+        reader.onloadend = () => setPreviewUrl(reader.result);
         reader.readAsDataURL(file);
     };
 
+    // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!screenshot) {
-            toast({
-                title: 'No Screenshot',
-                description: 'Please upload a payment screenshot',
-                variant: 'destructive',
-            });
+            toast({ title: 'No Screenshot', description: 'Please upload a payment screenshot', variant: 'destructive' });
             return;
         }
 
         setUploading(true);
-
         try {
             const formData = new FormData();
             formData.append('screenshot', screenshot);
@@ -141,29 +134,18 @@ export default function PaymentVerificationPage({ params }) {
             const data = await response.json();
 
             if (!data.success) {
-                toast({
-                    title: 'Upload Failed',
-                    description: data.error || 'Failed to upload screenshot',
-                    variant: 'destructive',
-                });
+                toast({ title: 'Upload Failed', description: data.error || 'Failed to upload screenshot', variant: 'destructive' });
                 return;
             }
 
-            toast({
-                title: 'Success!',
-                description: 'Payment screenshot uploaded successfully. We will verify and confirm your order shortly.',
-            });
+            toast({ title: 'Success!', description: 'Payment screenshot uploaded successfully. We will verify and confirm your order shortly.' });
 
             setTimeout(() => {
                 router.push(`/orders/${orderNumber}`);
             }, 2000);
         } catch (error) {
             console.error('Upload Error:', error);
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to upload screenshot',
-                variant: 'destructive',
-            });
+            toast({ title: 'Error', description: error.message || 'Failed to upload screenshot', variant: 'destructive' });
         } finally {
             setUploading(false);
         }
@@ -193,9 +175,7 @@ export default function PaymentVerificationPage({ params }) {
         );
     }
 
-    if (!order) {
-        return null;
-    }
+    if (!order) return null;
 
     return (
         <div className="py-12 px-4">

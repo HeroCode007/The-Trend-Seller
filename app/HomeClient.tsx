@@ -6,6 +6,15 @@ import Image from 'next/image';
 import { ArrowRight, Watch, Package, Wallet, Sparkles, Shield, Award } from 'lucide-react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 
+// ⭐ Add Particle type
+interface Particle {
+    x: number;
+    y: number;
+    drift: number;
+    delay: number;
+    duration: number;
+}
+
 export default function Home() {
     const heroRef = useRef(null);
     const { scrollYProgress } = useScroll({
@@ -17,11 +26,11 @@ export default function Home() {
     const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
     const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
 
-    // ⭐ FIX: Particles generated only on client
-    const [particles, setParticles] = useState([]);
+    // ⭐ FIX — Type the state correctly
+    const [particles, setParticles] = useState<Particle[]>([]);
 
     useEffect(() => {
-        const pts = Array.from({ length: 20 }).map(() => ({
+        const pts: Particle[] = Array.from({ length: 20 }).map(() => ({
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
             drift: Math.random() * -200,
@@ -31,6 +40,7 @@ export default function Home() {
 
         setParticles(pts);
     }, []);
+
 
     return (
         <div className="overflow-hidden">
@@ -104,7 +114,7 @@ export default function Home() {
                        bg-white-500/20 border border-amber-400/30 backdrop-blur-sm"
                     >
                         <Sparkles className="h-4 w-4 text-white-300" />
-                        <span className="text-sm font-medium text-amber-100">Premium Collection 2025</span>
+                        <span className="text-sm font-medium text-amber-100">Premium Collection</span>
                     </motion.div>
 
                     {/* Title */}
@@ -321,7 +331,19 @@ export default function Home() {
 }
 
 // 🎨 Category Card Component
-function CategoryCard({ title, image, icon: Icon, desc, href, color, index }) {
+// 🎨 Category Card Component
+
+interface CategoryCardProps {
+    title: string;
+    image: string;
+    icon: React.ElementType;
+    desc: string;
+    href: string;
+    color: string;
+    index: number;
+}
+
+function CategoryCard({ title, image, icon: Icon, desc, href, color, index }: CategoryCardProps) {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -336,10 +358,7 @@ function CategoryCard({ title, image, icon: Icon, desc, href, color, index }) {
         >
             <Link href={href} className="block rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-500">
                 <div className="relative h-[380px] overflow-hidden bg-neutral-100">
-                    <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.6 }}
-                    >
+                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.6 }}>
                         <Image
                             src={image}
                             alt={`${title} Collection`}
@@ -349,13 +368,11 @@ function CategoryCard({ title, image, icon: Icon, desc, href, color, index }) {
                         />
                     </motion.div>
 
-                    <motion.div
-                        className={`absolute inset-0 bg-gradient-to-t ${color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                    />
+                    <motion.div className={`absolute inset-0 bg-gradient-to-t ${color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
                     <motion.div
                         className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm 
-                       flex items-center justify-center shadow-lg"
+                           flex items-center justify-center shadow-lg"
                         initial={{ scale: 0 }}
                         animate={isInView ? { scale: 1 } : {}}
                         transition={{ duration: 0.5, delay: index * 0.2 + 0.3 }}
@@ -387,3 +404,4 @@ function CategoryCard({ title, image, icon: Icon, desc, href, color, index }) {
         </motion.div>
     );
 }
+

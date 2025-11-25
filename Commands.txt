@@ -1,0 +1,8 @@
+git status
+git add .
+
+git commit -m "Add 3 new Rolex watches and fix 404 issues"
+
+git pull origin main
+git push origin main
+vercel --prod

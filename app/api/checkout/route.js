@@ -82,7 +82,7 @@ export async function POST(request) {
       case 'bank-transfer':
         paymentStatus = 'awaiting_verification';
         paymentNote =
-          'Please transfer payment to Bank ABC, Account #123456789, Title: The Trend Seller.';
+          'Please transfer payment To Listed Bank Account and Upload the ScreenShot We will verify your Order';
         break;
 
       default:
