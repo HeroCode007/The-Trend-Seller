@@ -86,6 +86,9 @@ export default function WalletDetailPage({ params }) {
               <p className="text-3xl font-bold text-neutral-900 mb-6">
                 ₨{product.price}
               </p>
+              <p className="text-sm text-black-500 mb-2">
+                Product Code: <span className="font-semibold">{product.productCode}</span>
+              </p>
 
               <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
                 {product.description}

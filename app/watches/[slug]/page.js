@@ -75,7 +75,7 @@ export default function WatchDetailPage({ params }) {
       />
 
       <div className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Link
             href={getCategoryPath(product.category)}
             className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 mb-8 transition-colors"
@@ -97,15 +97,22 @@ export default function WatchDetailPage({ params }) {
             </div>
 
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4">
+              <h1 className="text-2xl md:text-5xl font-bold text-neutral-900 mb-4">
                 {product.name}
               </h1>
-              <p className="text-3xl font-bold text-neutral-900 mb-6">
+
+              <p className="text-sm text-black-500 mb-2">
+                Product Code: <span className="font-semibold">{product.productCode}</span>
+              </p>
+
+              <p className="text-2xl font-bold text-neutral-900 mb-6">
                 ₨{product.price}
               </p>
+
               <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
                 {product.description}
               </p>
+
 
               <div className="mb-8">
                 <h2 className="text-xl font-semibold text-neutral-900 mb-4">
