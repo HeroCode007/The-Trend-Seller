@@ -13,7 +13,7 @@ const OrderSchema = new mongoose.Schema(
         },
         items: [
             {
-                productId: { type: Number, required: true }, // ✅ using Number for consistency with Cart
+                productId: { type: Number, required: true },
                 slug: { type: String },
                 name: { type: String, required: true },
                 price: { type: Number, required: true },
@@ -29,14 +29,19 @@ const OrderSchema = new mongoose.Schema(
             city: { type: String, required: true },
             postalCode: { type: String, required: true },
         },
-        totalAmount: { type: Number, required: true },
+        totalAmount: { type: Number, required: true }, // Product subtotal only
+
+        // 🚚 Delivery charges field
+        deliveryCharges: {
+            type: Number,
+            default: 250, // Standard delivery charge
+        },
 
         // 🧾 Payment fields
         paymentMethod: {
             type: String,
             required: true,
             enum: ['cod', 'jazzcash', 'easypaisa', 'bank-transfer'],
-
         },
         paymentNote: {
             type: String,
@@ -80,5 +85,14 @@ OrderSchema.pre('validate', async function (next) {
     }
     next();
 });
+
+// 📊 Virtual field for grand total (totalAmount + deliveryCharges)
+OrderSchema.virtual('grandTotal').get(function () {
+    return this.totalAmount + (this.deliveryCharges || 0);
+});
+
+// Ensure virtuals are included when converting to JSON/Object
+OrderSchema.set('toJSON', { virtuals: true });
+OrderSchema.set('toObject', { virtuals: true });
 
 export default mongoose.models.Order || mongoose.model('Order', OrderSchema);

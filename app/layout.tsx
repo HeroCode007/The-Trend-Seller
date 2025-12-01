@@ -24,6 +24,14 @@ export const metadata: Metadata = {
     'leather goods',
     'timepieces',
   ],
+  icons: {
+    icon: [
+      { url: '/TTS.ico', sizes: 'any' },
+      { url: '/TTS.png', type: 'image/svg+xml,png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',

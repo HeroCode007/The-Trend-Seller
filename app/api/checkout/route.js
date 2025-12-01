@@ -51,10 +51,14 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: 'Cart is empty' }, { status: 400 });
 
     // 💰 Calculate total
-    const totalAmount = cart.items.reduce(
+    const subtotal = cart.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
+
+    // Calculate delivery charges (free for orders ≥ 7000)
+    const deliveryCharges = subtotal >= 7000 ? 0 : 250;
+    const totalAmount = subtotal + deliveryCharges;
 
     // 💳 Determine payment status and URL
     let paymentStatus = 'pending';
@@ -90,6 +94,7 @@ export async function POST(request) {
     }
 
     // 📦 Create the order
+    // 📦 Create the order
     const order = await Order.create({
       items: cart.items.map((item) => ({
         productId: item.productId,
@@ -100,11 +105,12 @@ export async function POST(request) {
         quantity: item.quantity,
       })),
       shippingAddress,
-      totalAmount,
+      totalAmount,          // ✅ Total including delivery
+      deliveryCharges,      // ✅ Add this line
       paymentMethod,
       paymentStatus,
       paymentNote,
-      paymentUrl, // store redirect URL for frontend
+      paymentUrl,
       sessionId,
       status: 'pending',
     });
@@ -125,13 +131,22 @@ export async function POST(request) {
     <p>Order Number: <strong>${order.orderNumber}</strong></p>
     <p>Payment Method: ${order.paymentMethod}</p>
     <p>Payment Status: ${order.paymentStatus}</p>
-    <p>Total Amount: ₨${order.totalAmount}</p>
-    <p>Customer: ${shippingAddress.fullName}, ${shippingAddress.email}, ${shippingAddress.phone}</p>
-    <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}</p>
+    <hr>
+    <h3>Customer Details:</h3>
+    <p>Name: ${shippingAddress.fullName}</p>
+    <p>Email: ${shippingAddress.email}</p>
+    <p>Phone: ${shippingAddress.phone}</p>
+    <p>Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}</p>
+    <hr>
     <h3>Order Items:</h3>
     <ul>
       ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
     </ul>
+    <p><strong>Subtotal:</strong> ₨${subtotal.toFixed(2)}</p>
+    <p><strong>Delivery Charges:</strong> ${deliveryCharges === 0 ? 'FREE' : `₨${deliveryCharges.toFixed(2)}`}</p>
+    <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmount.toFixed(2)}</strong></p>
+    <hr>
+    <p>Status: <strong>${order.status}</strong></p>
   `,
     });
 
@@ -144,13 +159,20 @@ export async function POST(request) {
     <p>Order Number: <strong>${order.orderNumber}</strong></p>
     <p>Payment Method: ${order.paymentMethod}</p>
     <p>Payment Status: ${order.paymentStatus}</p>
-    <p>Total Amount: ₨${order.totalAmount}</p>
-    <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}</p>
+    <hr>
+    <h3>Shipping Address:</h3>
+    <p>${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}</p>
+    <hr>
     <h3>Order Items:</h3>
     <ul>
       ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
     </ul>
+    <p><strong>Subtotal:</strong> ₨${subtotal.toFixed(2)}</p>
+    <p><strong>Delivery Charges:</strong> ${deliveryCharges === 0 ? 'FREE' : `₨${deliveryCharges.toFixed(2)}`}</p>
+    <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmount.toFixed(2)}</strong></p>
+    <hr>
     <p>We will notify you once your order is shipped.</p>
+    <p>Thank you for shopping with The Trend Seller!</p>
   `,
     });
 

@@ -144,21 +144,10 @@ export async function POST(request) {
         console.log('Order updated successfully');
 
         // --- Send Emails (in parallel with error handling) ---
-        const totalAmountWithDelivery = (order.totalAmount || 0) + (order.deliveryCharges || 0);
+        // --- Send Emails (in parallel with error handling) ---
+        const totalAmountWithDelivery = (order.totalAmount || 0); // ✅ Already includes delivery
+        const subtotalAmount = totalAmountWithDelivery - (order.deliveryCharges || 0);
         const screenshotUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/uploads/${fileName}`;
-
-        const adminEmailsRaw = process.env.ADMIN_EMAIL || '';
-        const adminEmails = adminEmailsRaw
-            .split(',')
-            .map(email => email.trim())
-            .filter(email => email && email.includes('@'));
-
-        if (adminEmails.length === 0) {
-            console.warn('No valid admin emails configured');
-        }
-
-        // Prepare email promises
-        const emailPromises = [];
 
         // Admin emails
         adminEmails.forEach(email => {
@@ -167,30 +156,29 @@ export async function POST(request) {
                     to: email,
                     subject: `Payment Verification Required: ${orderNumber}`,
                     html: `
-                        <h2>Payment Screenshot Received</h2>
-                        <p>Order Number: <strong>${order.orderNumber}</strong></p>
-                        <p>Payment Method: <strong>${paymentMethod.toUpperCase().replace('-', ' ')}</strong></p>
-                        <p>Amount: <strong>₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
-                        <hr>
-                        <h3>Customer Details:</h3>
-                        <p>Name: ${order.shippingAddress.fullName || 'N/A'}</p>
-                        <p>Email: ${order.shippingAddress.email}</p>
-                        <p>Phone: ${order.shippingAddress.phone || 'N/A'}</p>
-                        <p>Status: <strong>Awaiting Verification</strong></p>
-                        <p>Screenshot: <a href="${screenshotUrl}" target="_blank">View Screenshot</a></p>
-                        <hr>
-                        <h3>Order Items:</h3>
-                        <ul>
-                            ${order.items.map(item =>
+                <h2>Payment Screenshot Received</h2>
+                <p>Order Number: <strong>${order.orderNumber}</strong></p>
+                <p>Payment Method: <strong>${paymentMethod.toUpperCase().replace('-', ' ')}</strong></p>
+                <hr>
+                <h3>Order Summary:</h3>
+                <ul>
+                    ${order.items.map(item =>
                         `<li>${item.name} × ${item.quantity} - ₨${(item.price * item.quantity).toFixed(2)}</li>`
                     ).join('')}
-                        </ul>
-                        <p>Subtotal: ₨${(order.totalAmount || 0).toFixed(2)}</p>
-                        <p>Delivery Charges: ₨${(order.deliveryCharges || 0).toFixed(2)}</p>
-                        <p><strong>Total: ₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
-                        <hr>
-                        <p><strong>⚠️ Action Required:</strong> Please verify the payment screenshot and update the order status.</p>
-                    `,
+                </ul>
+                <p><strong>Subtotal:</strong> ₨${subtotalAmount.toFixed(2)}</p>
+                <p><strong>Delivery Charges:</strong> ${order.deliveryCharges === 0 ? 'FREE' : `₨${order.deliveryCharges.toFixed(2)}`}</p>
+                <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
+                <hr>
+                <h3>Customer Details:</h3>
+                <p>Name: ${order.shippingAddress.fullName || 'N/A'}</p>
+                <p>Email: ${order.shippingAddress.email}</p>
+                <p>Phone: ${order.shippingAddress.phone || 'N/A'}</p>
+                <p>Status: <strong>Awaiting Verification</strong></p>
+                <p>Screenshot: <a href="${screenshotUrl}" target="_blank">View Screenshot</a></p>
+                <hr>
+                <p><strong>⚠️ Action Required:</strong> Please verify the payment screenshot and update the order status.</p>
+            `,
                 }).catch(err => {
                     console.error(`Failed to send admin email to ${email}:`, err);
                     return { error: err.message, email };
@@ -204,25 +192,24 @@ export async function POST(request) {
                 to: order.shippingAddress.email,
                 subject: `Payment Screenshot Received: ${orderNumber}`,
                 html: `
-                    <h2>Thank you for your payment!</h2>
-                    <p>Order Number: <strong>${order.orderNumber}</strong></p>
-                    <p>Amount: <strong>₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
-                    <p>Payment Method: <strong>${paymentMethod.toUpperCase().replace('-', ' ')}</strong></p>
-                    <p>Status: <strong>Awaiting Verification</strong></p>
-                    <hr>
-                    <p>We have received your payment screenshot and it is now under verification. You will receive a confirmation email once your payment is verified.</p>
-                    <h3>Order Items:</h3>
-                    <ul>
-                        ${order.items.map(item =>
+            <h2>Thank you for your payment!</h2>
+            <p>Order Number: <strong>${order.orderNumber}</strong></p>
+            <p>Payment Method: <strong>${paymentMethod.toUpperCase().replace('-', ' ')}</strong></p>
+            <p>Status: <strong>Awaiting Verification</strong></p>
+            <hr>
+            <h3>Order Summary:</h3>
+            <ul>
+                ${order.items.map(item =>
                     `<li>${item.name} × ${item.quantity} - ₨${(item.price * item.quantity).toFixed(2)}</li>`
                 ).join('')}
-                    </ul>
-                    <p>Subtotal: ₨${(order.totalAmount || 0).toFixed(2)}</p>
-                    <p>Delivery Charges: ₨${(order.deliveryCharges || 0).toFixed(2)}</p>
-                    <p><strong>Total: ₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
-                    <hr>
-                    <p>Thank you for shopping with us!</p>
-                `
+            </ul>
+            <p><strong>Subtotal:</strong> ₨${subtotalAmount.toFixed(2)}</p>
+            <p><strong>Delivery Charges:</strong> ${order.deliveryCharges === 0 ? 'FREE' : `₨${order.deliveryCharges.toFixed(2)}`}</p>
+            <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
+            <hr>
+            <p>We have received your payment screenshot and it is now under verification. You will receive a confirmation email once your payment is verified.</p>
+            <p>Thank you for shopping with us!</p>
+        `
             }).catch(err => {
                 console.error('Failed to send customer email:', err);
                 return { error: err.message, email: order.shippingAddress.email };

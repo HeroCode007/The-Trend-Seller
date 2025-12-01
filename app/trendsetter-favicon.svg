@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="64" height="64" rx="12" fill="url(#bgGradient)"/>
+  
+  <!-- Stylized "TTS" monogram -->
+  <g transform="translate(8, 18)">
+    <!-- First T -->
+    <path d="M 0 2 L 8 2 L 8 5 L 6 5 L 6 20 L 2 20 L 2 5 L 0 5 Z" fill="#ffffff"/>
+    
+    <!-- Second T -->
+    <path d="M 10 2 L 18 2 L 18 5 L 16 5 L 16 20 L 12 20 L 12 5 L 10 5 Z" fill="#ffffff" opacity="0.9"/>
+    
+    <!-- S -->
+    <path d="M 22 2 Q 28 2 28 6.5 Q 28 9.5 25 10.5 Q 30 11.5 30 16 Q 30 20 22 20 L 20 20 L 20 17 L 22 17 Q 27 17 27 15 Q 27 13 22 13 L 20 13 L 20 10 L 22 10 Q 25 10 25 7.5 Q 25 5 22 5 L 20 5 L 20 2 Z" fill="url(#accentGradient)"/>
+  </g>
+  
+  <!-- Trend line accent -->
+  <path d="M 6 46 L 16 41 L 28 44 L 40 38 L 52 40 L 58 36" stroke="url(#accentGradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="58" cy="36" r="3" fill="#06b6d4"/>
+  <circle cx="58" cy="36" r="2" fill="#ffffff" opacity="0.8"/>
+</svg>

@@ -267,7 +267,13 @@ export default function PaymentVerificationPage({ params }) {
     // Calculate total amount including delivery
     const calculateTotal = () => {
         if (!order) return 0;
-        return (order.totalAmount || 0) + (order.deliveryCharges || 0);
+        return order.totalAmount || 0;
+    };
+
+    // ✅ ADD THIS NEW FUNCTION - Calculate subtotal without delivery
+    const calculateSubtotal = () => {
+        if (!order) return 0;
+        return (order.totalAmount || 0) - (order.deliveryCharges || 0);
     };
 
     if (loading) {
@@ -297,6 +303,7 @@ export default function PaymentVerificationPage({ params }) {
 
                 <div className="space-y-6">
                     {/* Order Summary */}
+                    {/* Order Summary */}
                     <div className="bg-white border border-neutral-200 rounded-lg p-6">
                         <h2 className="text-xl font-semibold text-neutral-900 mb-4">Order Summary</h2>
                         <div className="space-y-3">
@@ -310,16 +317,24 @@ export default function PaymentVerificationPage({ params }) {
                             ))}
                         </div>
                         <div className="border-t border-neutral-200 mt-4 pt-4 space-y-2">
+                            {/* ✅ Add Subtotal */}
                             <div className="flex justify-between text-sm">
                                 <span className="text-neutral-600">Subtotal</span>
-                                <span className="text-neutral-900">₨{(order.totalAmount || 0).toLocaleString('en-PK')}</span>
+                                <span className="text-neutral-900">₨{calculateSubtotal().toLocaleString('en-PK')}</span>
                             </div>
-                            {order.deliveryCharges > 0 && (
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-neutral-600">Delivery Charges</span>
-                                    <span className="text-neutral-900">₨{order.deliveryCharges.toLocaleString('en-PK')}</span>
-                                </div>
-                            )}
+
+                            {/* ✅ Add Delivery Charges */}
+                            <div className="flex justify-between text-sm">
+                                <span className="text-neutral-600">Delivery Charges</span>
+                                <span className={order.deliveryCharges === 0 ? 'text-green-600 font-medium' : 'text-neutral-900'}>
+                                    {order.deliveryCharges === 0
+                                        ? 'FREE'
+                                        : `₨${(order.deliveryCharges ?? 0).toLocaleString('en-PK')}`}
+                                </span>
+
+                            </div>
+
+                            {/* Total */}
                             <div className="flex justify-between text-lg font-bold text-neutral-900 pt-2 border-t">
                                 <span>Total Amount</span>
                                 <span>₨{totalAmount.toLocaleString('en-PK')}</span>
