@@ -144,10 +144,24 @@ export async function POST(request) {
         console.log('Order updated successfully');
 
         // --- Send Emails (in parallel with error handling) ---
-        // --- Send Emails (in parallel with error handling) ---
-        const totalAmountWithDelivery = (order.totalAmount || 0); // ✅ Already includes delivery
+        const emailPromises = [];
+
+        // Get admin emails from environment variable
+        const adminEmails = process.env.ADMIN_EMAILS
+            ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim())
+            : [];
+
+        if (adminEmails.length === 0) {
+            console.warn('No admin emails configured. Skipping admin notifications.');
+        }
+
+        // Calculate amounts
+        const totalAmountWithDelivery = (order.totalAmount || 0);
         const subtotalAmount = totalAmountWithDelivery - (order.deliveryCharges || 0);
-        const screenshotUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/uploads/${fileName}`;
+
+        // Generate screenshot URL
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+        const screenshotUrl = `${baseUrl}/uploads/${fileName}`;
 
         // Admin emails
         adminEmails.forEach(email => {

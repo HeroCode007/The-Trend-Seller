@@ -66,6 +66,10 @@ const OrderSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        paymentVerifiedAt: {
+            type: Date,
+            default: null,
+        },
 
         // 🚚 Order processing status
         status: {
