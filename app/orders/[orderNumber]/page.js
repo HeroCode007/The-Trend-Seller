@@ -1,29 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Package, ArrowLeft, Mail, Phone, Printer, Clock, AlertCircle, Truck, MapPin } from 'lucide-react';
 
 export default function OrderStatusPage({ params }) {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
+    const searchParams = useSearchParams();
 
-    useEffect(() => {
-        if (params?.orderNumber) {
-            fetchOrder(params.orderNumber);
-        }
-    }, [params]);
-
-    // Auto-trigger payment verification when screenshot is uploaded
-    useEffect(() => {
-        if (order && order.paymentStatus === 'awaiting_verification' && !verifying) {
-            triggerPaymentVerification();
-        }
-    }, [order]);
-
-    const fetchOrder = async (orderNumber) => {
+    // ✅ Use useCallback to make fetchOrder stable
+    const fetchOrder = useCallback(async (orderNumber) => {
         try {
-            const res = await fetch(`/api/orders/${orderNumber}`);
+            // ✅ Add cache-busting timestamp to force fresh data
+            const timestamp = Date.now();
+            const res = await fetch(`/api/orders/${orderNumber}?t=${timestamp}`, {
+                cache: 'no-store',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
             const data = await res.json();
             if (data.success && data.order) {
                 setOrder(data.order);
@@ -36,9 +34,43 @@ export default function OrderStatusPage({ params }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    // ✅ Fetch order on mount and when params change
+    useEffect(() => {
+        if (params?.orderNumber) {
+            setLoading(true);
+            fetchOrder(params.orderNumber);
+        }
+    }, [params?.orderNumber, fetchOrder]);
+
+    // ✅ Check for query params indicating successful upload
+    useEffect(() => {
+        const uploaded = searchParams.get('uploaded');
+        const payment = searchParams.get('payment');
+
+        if ((uploaded === 'true' || payment === 'uploaded') && params?.orderNumber) {
+            // Force refetch when redirected from payment verification
+            setLoading(true);
+            fetchOrder(params.orderNumber);
+
+            // Clean up URL without causing a refresh
+            if (typeof window !== 'undefined') {
+                window.history.replaceState({}, '', `/orders/${params.orderNumber}`);
+            }
+        }
+    }, [searchParams, params?.orderNumber, fetchOrder]);
+
+    // Auto-trigger payment verification when screenshot is uploaded
+    useEffect(() => {
+        if (order && order.paymentStatus === 'awaiting_verification' && order.paymentScreenshot && !verifying) {
+            triggerPaymentVerification();
+        }
+    }, [order?.paymentStatus, order?.paymentScreenshot]);
 
     const triggerPaymentVerification = async () => {
+        if (!order) return;
+
         setVerifying(true);
         try {
             const res = await fetch(`/api/orders/${order.orderNumber}/verify-payment`, {

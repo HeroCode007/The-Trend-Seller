@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, Upload, AlertCircle, Copy, Check, X } from 'lucide-react';
 
 export default function PaymentVerificationPage({ params }) {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const { toast } = useToast();
     const { orderNumber } = params;
@@ -21,6 +20,7 @@ export default function PaymentVerificationPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [accountLoading, setAccountLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false); // ✅ New state for success
     const [screenshot, setScreenshot] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [copiedName, setCopiedName] = useState(false);
@@ -51,13 +51,14 @@ export default function PaymentVerificationPage({ params }) {
 
     // Check if screenshot already uploaded
     useEffect(() => {
-        if (order?.paymentScreenshot) {
+        if (order?.paymentScreenshot && !uploadSuccess) {
             toast({
                 title: 'Already Submitted',
                 description: 'Payment screenshot has already been uploaded for this order.',
                 variant: 'destructive',
             });
-            router.push(`/orders/${orderNumber}`);
+            // Hard redirect
+            window.location.replace(`/orders/${orderNumber}`);
         }
     }, [order]);
 
@@ -75,7 +76,9 @@ export default function PaymentVerificationPage({ params }) {
 
     const fetchOrder = async () => {
         try {
-            const response = await fetch(`/api/orders/${orderNumber}`);
+            const response = await fetch(`/api/orders/${orderNumber}?t=${Date.now()}`, {
+                cache: 'no-store'
+            });
             const data = await response.json();
 
             if (!data.success) {
@@ -84,7 +87,7 @@ export default function PaymentVerificationPage({ params }) {
                     description: 'Order not found',
                     variant: 'destructive',
                 });
-                router.push('/');
+                window.location.replace('/');
                 return;
             }
 
@@ -213,21 +216,28 @@ export default function PaymentVerificationPage({ params }) {
                     description: data.error || 'Failed to upload screenshot',
                     variant: 'destructive'
                 });
+                setUploading(false);
                 return;
             }
 
+            // ✅ Set success state to show success UI
+            setUploadSuccess(true);
+
             toast({
                 title: 'Success!',
-                description: 'Payment screenshot uploaded successfully. We will verify and confirm your order shortly.'
+                description: 'Payment screenshot uploaded successfully. Redirecting...'
             });
 
             // Clear the screenshot after successful upload
             handleRemoveScreenshot();
 
-            // Redirect after success
+            // ✅ Use window.location.replace for HARD redirect (no back button)
+            // Add a small delay so the user sees the success message
             redirectTimeoutRef.current = setTimeout(() => {
-                router.push(`/orders/${orderNumber}`);
-            }, 2000);
+                // Force browser to not cache and do a full page load
+                window.location.replace(`/orders/${orderNumber}?uploaded=true&t=${Date.now()}`);
+            }, 1000);
+
         } catch (error) {
             console.error('Upload Error:', error);
             toast({
@@ -235,7 +245,6 @@ export default function PaymentVerificationPage({ params }) {
                 description: 'Failed to upload screenshot. Please try again.',
                 variant: 'destructive'
             });
-        } finally {
             setUploading(false);
         }
     };
@@ -270,11 +279,32 @@ export default function PaymentVerificationPage({ params }) {
         return order.totalAmount || 0;
     };
 
-    // ✅ ADD THIS NEW FUNCTION - Calculate subtotal without delivery
+    // Calculate subtotal without delivery
     const calculateSubtotal = () => {
         if (!order) return 0;
         return (order.totalAmount || 0) - (order.deliveryCharges || 0);
     };
+
+    // ✅ Show success screen while redirecting
+    if (uploadSuccess) {
+        return (
+            <div className="py-12 px-4">
+                <div className="max-w-md mx-auto text-center">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-8">
+                        <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-green-800 mb-2">Upload Successful!</h2>
+                        <p className="text-green-700 mb-4">
+                            Your payment screenshot has been uploaded successfully.
+                        </p>
+                        <div className="flex items-center justify-center gap-2 text-green-600">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span>Redirecting to order status...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (
@@ -303,7 +333,6 @@ export default function PaymentVerificationPage({ params }) {
 
                 <div className="space-y-6">
                     {/* Order Summary */}
-                    {/* Order Summary */}
                     <div className="bg-white border border-neutral-200 rounded-lg p-6">
                         <h2 className="text-xl font-semibold text-neutral-900 mb-4">Order Summary</h2>
                         <div className="space-y-3">
@@ -317,13 +346,11 @@ export default function PaymentVerificationPage({ params }) {
                             ))}
                         </div>
                         <div className="border-t border-neutral-200 mt-4 pt-4 space-y-2">
-                            {/* ✅ Add Subtotal */}
                             <div className="flex justify-between text-sm">
                                 <span className="text-neutral-600">Subtotal</span>
                                 <span className="text-neutral-900">₨{calculateSubtotal().toLocaleString('en-PK')}</span>
                             </div>
 
-                            {/* ✅ Add Delivery Charges */}
                             <div className="flex justify-between text-sm">
                                 <span className="text-neutral-600">Delivery Charges</span>
                                 <span className={order.deliveryCharges === 0 ? 'text-green-600 font-medium' : 'text-neutral-900'}>
@@ -331,10 +358,8 @@ export default function PaymentVerificationPage({ params }) {
                                         ? 'FREE'
                                         : `₨${(order.deliveryCharges ?? 0).toLocaleString('en-PK')}`}
                                 </span>
-
                             </div>
 
-                            {/* Total */}
                             <div className="flex justify-between text-lg font-bold text-neutral-900 pt-2 border-t">
                                 <span>Total Amount</span>
                                 <span>₨{totalAmount.toLocaleString('en-PK')}</span>
