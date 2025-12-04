@@ -1,407 +1,481 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Watch, Package, Wallet, Sparkles, Shield, Award } from 'lucide-react';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { ArrowRight, Sparkles, Shield, Award, ChevronDown } from 'lucide-react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 
-// ⭐ Add Particle type
+// ============================================
+// TYPES
+// ============================================
 interface Particle {
+    id: number;
     x: number;
     y: number;
-    drift: number;
-    delay: number;
+    size: number;
     duration: number;
+    delay: number;
 }
 
-export default function Home() {
-    const heroRef = useRef(null);
+// ============================================
+// TEXT SCRAMBLE HOOK
+// ============================================
+const scrambleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function useTextScramble(text: string, delay: number = 0) {
+    const [displayText, setDisplayText] = useState('');
+    const [isComplete, setIsComplete] = useState(false);
+
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+        let interval: NodeJS.Timeout;
+        let iteration = 0;
+
+        timeout = setTimeout(() => {
+            interval = setInterval(() => {
+                setDisplayText(
+                    text
+                        .split('')
+                        .map((char, index) => {
+                            if (char === ' ') return ' ';
+                            if (index < iteration) return text[index];
+                            return scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+                        })
+                        .join('')
+                );
+
+                iteration += 0.5;
+
+                if (iteration >= text.length) {
+                    clearInterval(interval);
+                    setDisplayText(text);
+                    setIsComplete(true);
+                }
+            }, 40);
+        }, delay);
+
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(interval);
+        };
+    }, [text, delay]);
+
+    return { displayText, isComplete };
+}
+
+// ============================================
+// MAGNETIC BUTTON
+// ============================================
+function MagneticButton({ children, href }: { children: React.ReactNode; href: string }) {
+    const buttonRef = useRef<HTMLAnchorElement>(null);
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+
+    const springX = useSpring(x, { damping: 20, stiffness: 200 });
+    const springY = useSpring(y, { damping: 20, stiffness: 200 });
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!buttonRef.current) return;
+        const rect = buttonRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        x.set((e.clientX - centerX) * 0.2);
+        y.set((e.clientY - centerY) * 0.2);
+    };
+
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    return (
+        <motion.a
+            ref={buttonRef}
+            href={href}
+            style={{ x: springX, y: springY }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative inline-flex items-center gap-3 px-8 py-4 
+                 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600
+                 text-black font-semibold text-lg rounded-full
+                 shadow-[0_0_30px_rgba(212,175,55,0.3)]
+                 hover:shadow-[0_0_40px_rgba(212,175,55,0.5)]
+                 transition-shadow duration-300 overflow-hidden"
+        >
+            <span className="relative z-10">{children}</span>
+            <ArrowRight className="h-5 w-5 relative z-10" />
+
+            {/* Shine effect */}
+            <div className="absolute inset-0 overflow-hidden rounded-full">
+                <div className="absolute inset-0 translate-x-[-100%] hover:translate-x-[100%] 
+                        transition-transform duration-700
+                        bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            </div>
+        </motion.a>
+    );
+}
+
+// ============================================
+// ANIMATED GRADIENT TEXT
+// ============================================
+function GradientText({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+    return (
+        <span
+            className={`bg-gradient-to-r from-amber-300 via-amber-100 to-amber-400 
+                  bg-clip-text text-transparent animate-gradient-x ${className}`}
+            style={{
+                backgroundSize: '200% auto',
+                animation: 'gradient-x 3s linear infinite',
+            }}
+        >
+            {children}
+        </span>
+    );
+}
+
+// ============================================
+// CSS ANIMATED WATCH (No Three.js!)
+// ============================================
+function AnimatedWatch() {
+    return (
+        <motion.div
+            className="relative w-[280px] h-[280px] md:w-[380px] md:h-[380px]"
+            initial={{ opacity: 0, scale: 0.8, rotateY: -30 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+        >
+            {/* Glow behind watch */}
+            <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-3xl animate-pulse" />
+
+            {/* Floating animation wrapper */}
+            <motion.div
+                className="relative w-full h-full"
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+                {/* Watch SVG */}
+                <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+                    {/* Outer shadow */}
+                    <defs>
+                        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feDropShadow dx="0" dy="10" stdDeviation="10" floodColor="#000" floodOpacity="0.3" />
+                        </filter>
+                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#f5d742" />
+                            <stop offset="50%" stopColor="#d4af37" />
+                            <stop offset="100%" stopColor="#b8960c" />
+                        </linearGradient>
+                        <linearGradient id="faceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#1a1a1a" />
+                            <stop offset="100%" stopColor="#0a0a0a" />
+                        </linearGradient>
+                    </defs>
+
+                    {/* Watch case */}
+                    <circle cx="100" cy="100" r="85" fill="#111" filter="url(#shadow)" />
+                    <circle cx="100" cy="100" r="82" fill="url(#faceGradient)" stroke="url(#goldGradient)" strokeWidth="4" />
+
+                    {/* Inner bezel */}
+                    <circle cx="100" cy="100" r="72" fill="none" stroke="#222" strokeWidth="1" />
+
+                    {/* Hour markers */}
+                    {[...Array(12)].map((_, i) => {
+                        const angle = (i * 30 - 90) * (Math.PI / 180);
+                        const isMain = i % 3 === 0;
+                        const innerR = isMain ? 54 : 58;
+                        const outerR = 66;
+                        return (
+                            <line
+                                key={i}
+                                x1={100 + innerR * Math.cos(angle)}
+                                y1={100 + innerR * Math.sin(angle)}
+                                x2={100 + outerR * Math.cos(angle)}
+                                y2={100 + outerR * Math.sin(angle)}
+                                stroke={isMain ? "url(#goldGradient)" : "#444"}
+                                strokeWidth={isMain ? 3 : 1.5}
+                                strokeLinecap="round"
+                            />
+                        );
+                    })}
+
+                    {/* Brand text */}
+                    <text x="100" y="68" textAnchor="middle" fill="#d4af37" fontSize="7" fontFamily="serif" letterSpacing="1">
+                        THE TREND SELLER
+                    </text>
+                    <text x="100" y="135" textAnchor="middle" fill="#666" fontSize="5" fontFamily="sans-serif">
+                        PREMIUM
+                    </text>
+
+                    {/* Hour hand */}
+                    <line
+                        x1="100" y1="100" x2="100" y2="60"
+                        stroke="url(#goldGradient)" strokeWidth="4" strokeLinecap="round"
+                        style={{
+                            transformOrigin: '100px 100px',
+                            animation: 'rotate-hour 43200s linear infinite',
+                        }}
+                    />
+
+                    {/* Minute hand */}
+                    <line
+                        x1="100" y1="100" x2="100" y2="45"
+                        stroke="#fff" strokeWidth="2.5" strokeLinecap="round"
+                        style={{
+                            transformOrigin: '100px 100px',
+                            animation: 'rotate-minute 3600s linear infinite',
+                        }}
+                    />
+
+                    {/* Second hand */}
+                    <g style={{
+                        transformOrigin: '100px 100px',
+                        animation: 'rotate-second 60s linear infinite',
+                    }}>
+                        <line x1="100" y1="115" x2="100" y2="38" stroke="#ef4444" strokeWidth="1" strokeLinecap="round" />
+                        <circle cx="100" cy="115" r="3" fill="#ef4444" />
+                    </g>
+
+                    {/* Center */}
+                    <circle cx="100" cy="100" r="6" fill="url(#goldGradient)" />
+                    <circle cx="100" cy="100" r="2.5" fill="#0a0a0a" />
+
+                    {/* Crown */}
+                    <rect x="180" y="95" width="10" height="10" rx="2" fill="url(#goldGradient)" />
+
+                    {/* Glass reflection */}
+                    <ellipse cx="70" cy="70" rx="30" ry="20" fill="rgba(255,255,255,0.03)" transform="rotate(-30 70 70)" />
+                </svg>
+            </motion.div>
+
+            {/* Floating decorative elements */}
+            <motion.div
+                className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 opacity-60"
+                animate={{ y: [0, -10, 0], scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
+            />
+            <motion.div
+                className="absolute -bottom-2 -left-6 w-5 h-5 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 opacity-40"
+                animate={{ y: [0, 8, 0], scale: [1, 0.9, 1] }}
+                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+            />
+            <motion.div
+                className="absolute top-1/2 -right-8 w-3 h-3 rounded-full bg-white/30"
+                animate={{ x: [0, 5, 0], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+            />
+        </motion.div>
+    );
+}
+
+// ============================================
+// MAIN HERO COMPONENT (OPTIMIZED - NO THREE.JS)
+// ============================================
+export default function EnhancedHero() {
+    const heroRef = useRef<HTMLElement>(null);
+    const [particles, setParticles] = useState<Particle[]>([]);
+
     const { scrollYProgress } = useScroll({
         target: heroRef,
         offset: ["start start", "end start"]
     });
 
-    const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-    const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
-    const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+    const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+    const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
-    // ⭐ FIX — Type the state correctly
-    const [particles, setParticles] = useState<Particle[]>([]);
+    const { displayText: title1, isComplete: title1Complete } = useTextScramble('Elevate Your', 300);
+    const { displayText: title2 } = useTextScramble('Style', title1Complete ? 0 : 1500);
 
+    // Generate particles on mount (limited count for performance)
     useEffect(() => {
-        const pts: Particle[] = Array.from({ length: 20 }).map(() => ({
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            drift: Math.random() * -200,
-            delay: Math.random() * 3,
-            duration: 3 + Math.random() * 4,
+        const pts: Particle[] = Array.from({ length: 15 }).map((_, i) => ({
+            id: i,
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            size: Math.random() * 3 + 1,
+            duration: 6 + Math.random() * 6,
+            delay: Math.random() * 4,
         }));
-
         setParticles(pts);
     }, []);
 
-
     return (
-        <div className="overflow-hidden">
-            {/* 🎬 CINEMATIC PARALLAX HERO */}
+        <>
+            {/* CSS Keyframes */}
+            <style jsx global>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% center; }
+          50% { background-position: 200% center; }
+        }
+        @keyframes rotate-hour {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes rotate-minute {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes rotate-second {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes float-particle {
+          0%, 100% { opacity: 0; transform: translateY(0); }
+          50% { opacity: 0.8; }
+          100% { opacity: 0; transform: translateY(-100px); }
+        }
+      `}</style>
+
             <motion.section
                 ref={heroRef}
-                className="relative w-full h-[95vh] flex items-center justify-center overflow-hidden bg-black"
+                className="relative w-full h-screen flex items-center overflow-hidden bg-black"
             >
-                {/* Background */}
-                <motion.div
-                    style={{ scale, opacity: 0.4 }}
-                    className="absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center"
-                />
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-900 to-black" />
 
-                {/* Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black via-black/70 to-black" />
+                {/* Ambient glow effects */}
+                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full 
+                       bg-amber-900/20 blur-[120px] animate-pulse"
+                    style={{ animationDuration: '8s' }} />
+                <div className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] rounded-full 
+                       bg-blue-900/10 blur-[100px] animate-pulse"
+                    style={{ animationDuration: '10s', animationDelay: '2s' }} />
 
-                {/* ✨ Floating Particles */}
-                <div className="pointer-events-none absolute inset-0">
-                    {particles.map((p, i) => (
-                        <motion.div
-                            key={i}
-                            className="absolute w-1 h-1 bg-amber-400/30 rounded-full"
-                            initial={{
-                                x: p.x,
-                                y: p.y,
-                                opacity: 0,
-                            }}
-                            animate={{
-                                y: [p.y, p.y + p.drift],
-                                opacity: [0, 1, 0],
-                            }}
-                            transition={{
-                                duration: p.duration,
-                                repeat: Infinity,
-                                delay: p.delay,
+                {/* Particles (CSS-only animation) */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    {particles.map((p) => (
+                        <div
+                            key={p.id}
+                            className="absolute rounded-full bg-amber-400/50"
+                            style={{
+                                left: `${p.x}%`,
+                                top: `${p.y}%`,
+                                width: p.size,
+                                height: p.size,
+                                animation: `float-particle ${p.duration}s ease-in-out infinite`,
+                                animationDelay: `${p.delay}s`,
                             }}
                         />
                     ))}
                 </div>
 
-                {/* Hero Content */}
+                {/* Vignette */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.5)_100%)]" />
+
+                {/* Main Content */}
                 <motion.div
                     style={{ y, opacity }}
-                    className="relative z-20 px-8 md:px-12 py-12 md:py-16 rounded-2xl 
-                     backdrop-blur-2xl bg-white/10 border border-white/20 
-                     shadow-2xl max-w-3xl text-center text-white"
+                    className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 
+                     flex flex-col lg:flex-row items-center justify-between gap-12"
                 >
-                    {/* Aura */}
+                    {/* Left: Text Content */}
                     <motion.div
-                        className="pointer-events-none absolute -inset-2 rounded-2xl 
-                       bg-gradient-to-br from-amber-500/20 via-transparent to-sky-500/20 
-                       blur-2xl"
-                        animate={{
-                            opacity: [0.3, 0.6, 0.3],
-                            scale: [1, 1.05, 1],
-                        }}
-                        transition={{
-                            duration: 4,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                        }}
-                    />
-
-                    {/* Badge */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full 
-                       bg-white-500/20 border border-amber-400/30 backdrop-blur-sm"
+                        className="flex-1 max-w-xl"
                     >
-                        <Sparkles className="h-4 w-4 text-white-300" />
-                        <span className="text-sm font-medium text-amber-100">Premium Collection</span>
+                        {/* Badge */}
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full 
+                         bg-amber-500/10 border border-amber-400/30"
+                        >
+                            <Sparkles className="h-4 w-4 text-amber-400" />
+                            <span className="text-sm font-medium text-amber-200">Premium Collection</span>
+                        </motion.div>
+
+                        {/* Title */}
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white">
+                            <span className="block font-mono tracking-tight">{title1}</span>
+                            <span className="block font-mono tracking-tight">{title2}</span>
+                            <GradientText className="block mt-2 text-5xl md:text-6xl lg:text-7xl">
+                                Modern Luxury
+                            </GradientText>
+                        </h1>
+
+                        {/* Subtitle */}
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.8 }}
+                            transition={{ duration: 0.5, delay: 1.2 }}
+                            className="text-lg text-neutral-400 mb-8 max-w-md"
+                        >
+                            Discover premium watches, belts & wallets crafted for those who demand
+                            excellence in every detail.
+                        </motion.p>
+
+                        {/* CTA Buttons */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 1.4 }}
+                            className="flex flex-wrap gap-4"
+                        >
+                            <MagneticButton href="/watches">
+                                Shop Collection
+                            </MagneticButton>
+
+                            <a
+                                href="/about"
+                                className="inline-flex items-center gap-2 px-8 py-4 
+                           border border-white/20 text-white font-medium rounded-full
+                           hover:bg-white/5 transition-colors duration-300"
+                            >
+                                Our Story
+                            </a>
+                        </motion.div>
+
+                        {/* Trust Badges */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 1.6 }}
+                            className="flex gap-6 mt-8"
+                        >
+                            {[
+                                { icon: Shield, text: 'Premium Quality' },
+                                { icon: Award, text: 'Secure Checkout' },
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-neutral-500">
+                                    <item.icon className="h-4 w-4" />
+                                    <span className="text-sm">{item.text}</span>
+                                </div>
+                            ))}
+                        </motion.div>
                     </motion.div>
 
-                    {/* Title */}
-                    <motion.h1
-                        className="text-4xl md:text-6xl font-bold leading-tight mb-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.4 }}
-                    >
-                        {["Elevate", "Your", "Style"].map((word, i) => (
-                            <motion.span
-                                key={i}
-                                className="inline-block mr-4"
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    duration: 0.6,
-                                    delay: 0.5 + i * 0.15,
-                                    ease: "easeOut",
-                                }}
-                            >
-                                {word}
-                            </motion.span>
-                        ))}
-                        <br />
-                        <motion.span
-                            className="bg-gradient-to-r from-amber-300 via-amber-100 to-amber-300 
-                         bg-clip-text text-transparent"
-                            initial={{ opacity: 0, x: -50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.8, delay: 1 }}
-                        >
-                            Modern Luxury
-                        </motion.span>
-                    </motion.h1>
-
-                    {/* Subtitle */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 0.9, y: 0 }}
-                        transition={{ duration: 0.6, delay: 1.2 }}
-                        className="text-lg md:text-xl mb-8"
-                    >
-                        Discover premium watches, belts & wallets crafted for timeless elegance.
-                    </motion.p>
-
-                    {/* Button */}
+                    {/* Right: Animated Watch */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6, delay: 1.4 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                        className="flex-1 flex justify-center lg:justify-end"
                     >
-                        <Link
-                            href="/watches"
-                            className="group relative px-8 py-4 rounded-xl 
-       bg-gradient-to-r from-gray-600 via-gray-400 to-white 
-       text-gray-900 font-semibold 
-       shadow-lg shadow-amber-400/30 hover:shadow-amber-400/50
-       transition-all duration-300 
-       inline-flex items-center gap-2 overflow-hidden"
-                        >
-                            <span className="relative z-10">Shop Collection</span>
-                            <ArrowRight className="h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent 
-                           via-white/30 to-transparent"
-                                initial={{ x: '-100%' }}
-                                whileHover={{ x: '100%' }}
-                                transition={{ duration: 0.6 }}
-                            />
-                        </Link>
-                    </motion.div>
-
-                    {/* Trust Badges */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 1.6 }}
-                        className="mt-8 flex items-center justify-center gap-6 text-white/80 text-sm"
-                    >
-                        {[{ icon: Shield, text: "Premium Quality" }, { icon: Award, text: "Secure Checkout" }].map((badge, i) => (
-                            <motion.span
-                                key={i}
-                                className="inline-flex items-center gap-2"
-                                whileHover={{ scale: 1.1, color: "#fbbf24" }}
-                            >
-                                <badge.icon className="h-4 w-4" />
-                                {badge.text}
-                            </motion.span>
-                        ))}
+                        <AnimatedWatch />
                     </motion.div>
                 </motion.div>
 
                 {/* Scroll Indicator */}
                 <motion.div
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2"
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 2 }}
                 >
-                    <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
-                        <motion.div
-                            className="w-1.5 h-1.5 rounded-full bg-white"
-                            animate={{ y: [0, 12, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                        />
-                    </div>
+                    <span className="text-xs text-neutral-600 uppercase tracking-widest">Scroll</span>
+                    <motion.div
+                        animate={{ y: [0, 6, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                        <ChevronDown className="h-4 w-4 text-amber-500/50" />
+                    </motion.div>
                 </motion.div>
             </motion.section>
-
-            {/* FEATURED CATEGORIES */}
-            <section className="py-20 px-4 bg-white">
-                <div className="max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
-                        transition={{ duration: 0.6 }}
-                        className="text-center mb-16"
-                    >
-                        <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
-                            Featured Categories
-                        </h2>
-                        <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-amber-600 mx-auto rounded-full" />
-                    </motion.div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        {[
-                            {
-                                title: "Watches",
-                                image: "/images/Premium3.png",
-                                icon: Watch,
-                                desc: "Precision timepieces for every occasion",
-                                href: "/watches",
-                                color: "from-black-500/20 to-gray-500/20"
-                            },
-                            {
-                                title: "Belts",
-                                image: "/images/Belt4.png",
-                                icon: Package,
-                                desc: "Handcrafted leather belts",
-                                href: "/belts",
-                                color: "from-gray-500/20 to-red-500/20"
-                            },
-                            {
-                                title: "Wallets",
-                                image: "/images/Wallet1.png",
-                                icon: Wallet,
-                                desc: "Slim designs, premium materials",
-                                href: "/wallets",
-                                color: "from-emerald-500/20 to-teal-500/20"
-                            }
-                        ].map((category, i) => (
-                            <CategoryCard key={i} {...category} index={i} />
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* WHY CHOOSE US */}
-            <section className="py-20 px-4 bg-gradient-to-b from-neutral-50 to-white">
-                <div className="max-w-7xl mx-auto text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h2 className="text-3xl md:text-4xl font-bold mb-6 text-neutral-900">
-                            Why Choose The Trend Seller
-                        </h2>
-                        <p className="text-lg text-neutral-600 mb-12 max-w-2xl mx-auto">
-                            We're committed to offering only the finest accessories that combine style, quality, and lasting value.
-                        </p>
-                    </motion.div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            { emoji: "✓", title: "Premium Quality", desc: "Every product is carefully selected for exceptional craftsmanship and durability." },
-                            { emoji: "✓", title: "Timeless Design", desc: "Classic styles that never go out of fashion, suitable for any occasion." },
-                            { emoji: "✓", title: "Great Value", desc: "Competitive pricing without compromising on quality or service." }
-                        ].map((feature, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.2 }}
-                                whileHover={{
-                                    y: -10,
-                                    boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
-                                }}
-                                className="bg-white p-8 rounded-xl border border-neutral-200 transition-shadow"
-                            >
-                                <motion.div
-                                    className="w-16 h-16 bg-gradient-to-br from-amber-100 to-amber-200 
-                             rounded-full flex items-center justify-center mx-auto mb-4"
-                                    whileHover={{ rotate: 360, scale: 1.1 }}
-                                    transition={{ duration: 0.6 }}
-                                >
-                                    <span className="text-3xl">{feature.emoji}</span>
-                                </motion.div>
-                                <h3 className="text-xl font-semibold mb-3 text-neutral-900">{feature.title}</h3>
-                                <p className="text-neutral-600">{feature.desc}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-        </div>
+        </>
     );
 }
-
-// 🎨 Category Card Component
-// 🎨 Category Card Component
-
-interface CategoryCardProps {
-    title: string;
-    image: string;
-    icon: React.ElementType;
-    desc: string;
-    href: string;
-    color: string;
-    index: number;
-}
-
-function CategoryCard({ title, image, icon: Icon, desc, href, color, index }: CategoryCardProps) {
-    const ref = useRef(null);
-    const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-    return (
-        <motion.div
-            ref={ref}
-            initial={{ opacity: 0, y: 50 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: index * 0.2 }}
-            whileHover={{ y: -10 }}
-            className="group relative"
-        >
-            <Link href={href} className="block rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-500">
-                <div className="relative h-[380px] overflow-hidden bg-neutral-100">
-                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.6 }}>
-                        <Image
-                            src={image}
-                            alt={`${title} Collection`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            className="object-cover"
-                        />
-                    </motion.div>
-
-                    <motion.div className={`absolute inset-0 bg-gradient-to-t ${color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-                    <motion.div
-                        className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm 
-                           flex items-center justify-center shadow-lg"
-                        initial={{ scale: 0 }}
-                        animate={isInView ? { scale: 1 } : {}}
-                        transition={{ duration: 0.5, delay: index * 0.2 + 0.3 }}
-                        whileHover={{ scale: 1.2, rotate: 360 }}
-                    >
-                        <Icon className="h-6 w-6 text-neutral-700" />
-                    </motion.div>
-                </div>
-
-                <div className="p-6 text-center relative">
-                    <motion.div
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={isInView ? { x: 0, opacity: 1 } : {}}
-                        transition={{ duration: 0.5, delay: index * 0.2 + 0.4 }}
-                    >
-                        <h3 className="text-2xl font-bold text-neutral-900 mb-2">{title}</h3>
-                        <p className="text-neutral-600 text-sm mb-4">{desc}</p>
-
-                        <motion.span
-                            className="text-amber-600 font-semibold inline-flex items-center gap-2 group-hover:gap-3 transition-all"
-                            whileHover={{ x: 5 }}
-                        >
-                            Explore {title}
-                            <ArrowRight className="h-5 w-5" />
-                        </motion.span>
-                    </motion.div>
-                </div>
-            </Link>
-        </motion.div>
-    );
-}
-

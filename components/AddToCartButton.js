@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ShoppingCart, Loader2, Check } from 'lucide-react';
+import { ShoppingCart, Loader2, Check, XCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -11,7 +11,13 @@ export default function AddToCartButton({ product, className = '' }) {
     const { addToCart } = useCart();
     const { toast } = useToast();
 
+    // Check if product is out of stock
+    const isOutOfStock = product.inStock === false;
+
     const handleAddToCart = async () => {
+        // Prevent adding if out of stock
+        if (isOutOfStock) return;
+
         setLoading(true);
         setSuccess(false);
 
@@ -34,6 +40,19 @@ export default function AddToCartButton({ product, className = '' }) {
 
         setLoading(false);
     };
+
+    // Out of Stock button style
+    if (isOutOfStock) {
+        return (
+            <button
+                disabled
+                className={`w-full bg-neutral-200 text-neutral-400 px-8 py-4 rounded-lg font-semibold cursor-not-allowed flex items-center justify-center gap-2 ${className}`}
+            >
+                <XCircle className="h-5 w-5" />
+                Out of Stock
+            </button>
+        );
+    }
 
     return (
         <button
@@ -60,5 +79,3 @@ export default function AddToCartButton({ product, className = '' }) {
         </button>
     );
 }
-
-

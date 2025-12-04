@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
 import { sendEmail } from '@/lib/email';
-import fs from 'fs/promises';
-import path from 'path';
-import crypto from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -13,25 +10,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const VALID_PAYMENT_METHODS = ['jazzcash', 'easypaisa', 'bank-transfer'];
 
-// Utility function to sanitize filename
-function sanitizeFilename(filename) {
-    return filename
-        .replace(/[^a-zA-Z0-9.-]/g, '_')
-        .substring(0, 100);
-}
-
-// Utility function to clean up uploaded file
-async function cleanupFile(filePath) {
-    try {
-        await fs.unlink(filePath);
-    } catch (error) {
-        console.error('Failed to cleanup file:', error);
-    }
-}
-
 export async function POST(request) {
-    let uploadedFilePath = null;
-
     try {
         await connectDB();
 
@@ -112,29 +91,16 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        // --- Save file with enhanced security ---
+        // --- Convert file to Base64 (works on Vercel!) ---
         const arrayBuffer = await screenshotFile.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
+        const base64Data = buffer.toString('base64');
+        const dataUrl = `data:${screenshotFile.type};base64,${base64Data}`;
 
-        // Create uploads directory (async and recursive)
-        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-        await fs.mkdir(uploadsDir, { recursive: true });
-
-        // Generate secure filename
-        const fileExtension = path.extname(screenshotFile.name) || '.jpg';
-        const sanitizedName = sanitizeFilename(path.basename(screenshotFile.name, fileExtension));
-        const uniqueId = crypto.randomUUID();
-        const fileName = `${uniqueId}-${sanitizedName}${fileExtension}`;
-        const filePath = path.join(uploadsDir, fileName);
-
-        // Save file asynchronously
-        await fs.writeFile(filePath, buffer);
-        uploadedFilePath = filePath;
-
-        console.log('File saved successfully:', fileName);
+        console.log('File converted to base64, size:', base64Data.length);
 
         // --- Update order in database ---
-        order.paymentScreenshot = `/uploads/${fileName}`;
+        order.paymentScreenshot = dataUrl; // Store Base64 data URL
         order.paymentScreenshotUploadedAt = new Date();
         order.paymentStatus = 'awaiting_verification';
         order.paymentMethod = paymentMethod;
@@ -143,7 +109,7 @@ export async function POST(request) {
 
         console.log('Order updated successfully');
 
-        // --- Send Emails (in parallel with error handling) ---
+        // --- Send Emails ---
         const emailPromises = [];
 
         // Get admin emails from environment variable
@@ -159,11 +125,7 @@ export async function POST(request) {
         const totalAmountWithDelivery = (order.totalAmount || 0);
         const subtotalAmount = totalAmountWithDelivery - (order.deliveryCharges || 0);
 
-        // Generate screenshot URL
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
-        const screenshotUrl = `${baseUrl}/uploads/${fileName}`;
-
-        // Admin emails
+        // Admin emails (with embedded base64 image)
         adminEmails.forEach(email => {
             emailPromises.push(
                 sendEmail({
@@ -189,7 +151,8 @@ export async function POST(request) {
                 <p>Email: ${order.shippingAddress.email}</p>
                 <p>Phone: ${order.shippingAddress.phone || 'N/A'}</p>
                 <p>Status: <strong>Awaiting Verification</strong></p>
-                <p>Screenshot: <a href="${screenshotUrl}" target="_blank">View Screenshot</a></p>
+                <h3>Payment Screenshot:</h3>
+                <img src="${dataUrl}" alt="Payment Screenshot" style="max-width: 600px; border: 1px solid #ccc; border-radius: 8px;" />
                 <hr>
                 <p><strong>⚠️ Action Required:</strong> Please verify the payment screenshot and update the order status.</p>
             `,
@@ -253,11 +216,6 @@ export async function POST(request) {
 
     } catch (error) {
         console.error('Error processing payment verification:', error);
-
-        // Cleanup uploaded file if something went wrong
-        if (uploadedFilePath) {
-            await cleanupFile(uploadedFilePath);
-        }
 
         // Return appropriate error message
         if (error.name === 'ValidationError') {
