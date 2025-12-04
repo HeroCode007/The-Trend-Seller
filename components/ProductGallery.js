@@ -5,21 +5,17 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, ZoomIn, ImageOff } from 'lucide-react';
 
 export default function ProductGallery({ product }) {
-    // Use the `images` array, but fall back to the single `image` for safety
     const imageSources = product.images && product.images.length > 0
         ? product.images
         : [product.image];
 
-    // State management
     const [activeIndex, setActiveIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [isZoomed, setIsZoomed] = useState(false);
 
-    // Check stock status
     const isOutOfStock = product.inStock === false;
 
-    // Navigation handlers
     const goToPrevious = () => {
         setActiveIndex((prev) => (prev === 0 ? imageSources.length - 1 : prev - 1));
         setIsLoading(true);
@@ -38,7 +34,6 @@ export default function ProductGallery({ product }) {
         setHasError(false);
     };
 
-    // Dynamic grid columns based on image count
     const getGridCols = () => {
         const count = imageSources.length;
         if (count === 1) return 'grid-cols-1 max-w-[100px]';
@@ -50,19 +45,15 @@ export default function ProductGallery({ product }) {
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Main Image Container */}
             <div className="relative bg-neutral-100 rounded-lg overflow-hidden border border-neutral-200">
-                {/* Aspect ratio container */}
                 <div className="relative aspect-square flex items-center justify-center">
 
-                    {/* Loading skeleton */}
                     {isLoading && !hasError && (
                         <div className="absolute inset-0 bg-neutral-200 animate-pulse flex items-center justify-center">
                             <div className="w-12 h-12 border-4 border-neutral-300 border-t-amber-500 rounded-full animate-spin" />
                         </div>
                     )}
 
-                    {/* Error state */}
                     {hasError ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-100 text-neutral-400">
                             <ImageOff className="w-16 h-16 mb-2" />
@@ -87,7 +78,6 @@ export default function ProductGallery({ product }) {
                         />
                     )}
 
-                    {/* Out of Stock Overlay */}
                     {isOutOfStock && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
                             <span className="px-6 py-3 bg-red-600 text-white text-lg font-bold rounded-lg shadow-lg">
@@ -96,7 +86,6 @@ export default function ProductGallery({ product }) {
                         </div>
                     )}
 
-                    {/* Zoom hint */}
                     {!isOutOfStock && !hasError && !isLoading && (
                         <button
                             onClick={() => setIsZoomed(!isZoomed)}
@@ -107,7 +96,6 @@ export default function ProductGallery({ product }) {
                         </button>
                     )}
 
-                    {/* Navigation Arrows (only show if multiple images) */}
                     {imageSources.length > 1 && (
                         <>
                             <button
@@ -128,7 +116,6 @@ export default function ProductGallery({ product }) {
                     )}
                 </div>
 
-                {/* Image counter */}
                 {imageSources.length > 1 && (
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 text-white text-sm rounded-full">
                         {activeIndex + 1} / {imageSources.length}
@@ -136,12 +123,11 @@ export default function ProductGallery({ product }) {
                 )}
             </div>
 
-            {/* Thumbnails (only show if multiple images) */}
             {imageSources.length > 1 && (
                 <div className={`grid ${getGridCols()} gap-3`}>
                     {imageSources.map((image, index) => (
                         <button
-                            key={`${image}-${index}`}  {/* Safe key with index fallback */}
+                            key={`${image}-${index}`}
                             onClick={() => handleThumbnailClick(index)}
                             className={`aspect-square relative rounded-md overflow-hidden border-2 transition-all duration-200 ${activeIndex === index
                                     ? 'border-amber-600 ring-2 ring-amber-500/50'
