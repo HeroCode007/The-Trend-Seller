@@ -3,10 +3,11 @@ import connectDB from '@/lib/db';
 import Cart from '@/models/Cart';
 import Order from '@/models/Order';
 import { getSessionId } from '@/lib/session';
-
-import { sendEmail } from '@/lib/email';
-
-
+import {
+  sendEmail,
+  newOrderAdminEmail,
+  orderConfirmationCustomerEmail
+} from '@/lib/email';
 
 export async function POST(request) {
   try {
@@ -67,33 +68,29 @@ export async function POST(request) {
 
     switch (paymentMethod) {
       case 'cod':
-        paymentStatus = 'pending'; // Cash on delivery
+        paymentStatus = 'pending';
         paymentNote = 'Cash to be paid upon delivery.';
         break;
 
       case 'jazzcash':
         paymentStatus = 'awaiting_verification';
-        paymentNote = 'Redirecting to JazzCash for payment';
-        paymentUrl = `https://sandbox.jazzcash.com.pk/Checkout?orderId=${Date.now()}&amount=${totalAmount}`;
+        paymentNote = 'Please upload your JazzCash payment screenshot for verification.';
         break;
 
       case 'easypaisa':
         paymentStatus = 'awaiting_verification';
-        paymentNote = 'Redirecting to Easypaisa for payment';
-        paymentUrl = `https://sandbox.easypaisa.com.pk/Checkout?orderId=${Date.now()}&amount=${totalAmount}`;
+        paymentNote = 'Please upload your EasyPaisa payment screenshot for verification.';
         break;
 
       case 'bank-transfer':
         paymentStatus = 'awaiting_verification';
-        paymentNote =
-          'Please transfer payment To Listed Bank Account and Upload the ScreenShot We will verify your Order';
+        paymentNote = 'Please transfer payment to the listed bank account and upload the screenshot for verification.';
         break;
 
       default:
         paymentStatus = 'pending';
     }
 
-    // 📦 Create the order
     // 📦 Create the order
     const order = await Order.create({
       items: cart.items.map((item) => ({
@@ -105,8 +102,8 @@ export async function POST(request) {
         quantity: item.quantity,
       })),
       shippingAddress,
-      totalAmount,          // ✅ Total including delivery
-      deliveryCharges,      // ✅ Add this line
+      totalAmount,
+      deliveryCharges,
       paymentMethod,
       paymentStatus,
       paymentNote,
@@ -120,62 +117,37 @@ export async function POST(request) {
     cart.updatedAt = new Date();
     await cart.save();
 
-    // 📧 Send email notifications
+    // 📧 Send professional email notifications
+    const emailPromises = [];
 
-    // 1️⃣ Email to Admin
-    await sendEmail({
-      to: process.env.ADMIN_EMAIL,
-      subject: `New Order Received: ${order.orderNumber}`,
-      html: `
-    <h2>New Order Received</h2>
-    <p>Order Number: <strong>${order.orderNumber}</strong></p>
-    <p>Payment Method: ${order.paymentMethod}</p>
-    <p>Payment Status: ${order.paymentStatus}</p>
-    <hr>
-    <h3>Customer Details:</h3>
-    <p>Name: ${shippingAddress.fullName}</p>
-    <p>Email: ${shippingAddress.email}</p>
-    <p>Phone: ${shippingAddress.phone}</p>
-    <p>Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}</p>
-    <hr>
-    <h3>Order Items:</h3>
-    <ul>
-      ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
-    </ul>
-    <p><strong>Subtotal:</strong> ₨${subtotal.toFixed(2)}</p>
-    <p><strong>Delivery Charges:</strong> ${deliveryCharges === 0 ? 'FREE' : `₨${deliveryCharges.toFixed(2)}`}</p>
-    <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmount.toFixed(2)}</strong></p>
-    <hr>
-    <p>Status: <strong>${order.status}</strong></p>
-  `,
-    });
+    // 1️⃣ Email to Admin - Professional template
+    if (process.env.ADMIN_EMAIL) {
+      emailPromises.push(
+        sendEmail({
+          to: process.env.ADMIN_EMAIL,
+          subject: `🛒 New Order #${order.orderNumber} - ${paymentMethod.toUpperCase()} - Rs. ${totalAmount.toLocaleString()}`,
+          html: newOrderAdminEmail(order, shippingAddress),
+        }).catch(err => {
+          console.error('Failed to send admin email:', err);
+          return { error: err.message };
+        })
+      );
+    }
 
-    // 2️⃣ Email to Customer
-    await sendEmail({
-      to: shippingAddress.email,
-      subject: `Your Order Confirmation: ${order.orderNumber}`,
-      html: `
-    <h2>Thank you for your order!</h2>
-    <p>Order Number: <strong>${order.orderNumber}</strong></p>
-    <p>Payment Method: ${order.paymentMethod}</p>
-    <p>Payment Status: ${order.paymentStatus}</p>
-    <hr>
-    <h3>Shipping Address:</h3>
-    <p>${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.postalCode}, ${shippingAddress.country}</p>
-    <hr>
-    <h3>Order Items:</h3>
-    <ul>
-      ${order.items.map(item => `<li>${item.name} × ${item.quantity} - ₨${item.price}</li>`).join('')}
-    </ul>
-    <p><strong>Subtotal:</strong> ₨${subtotal.toFixed(2)}</p>
-    <p><strong>Delivery Charges:</strong> ${deliveryCharges === 0 ? 'FREE' : `₨${deliveryCharges.toFixed(2)}`}</p>
-    <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmount.toFixed(2)}</strong></p>
-    <hr>
-    <p>We will notify you once your order is shipped.</p>
-    <p>Thank you for shopping with The Trend Seller!</p>
-  `,
-    });
+    // 2️⃣ Email to Customer - Professional template
+    emailPromises.push(
+      sendEmail({
+        to: shippingAddress.email,
+        subject: `✅ Order Confirmed #${order.orderNumber} - The Trend Seller`,
+        html: orderConfirmationCustomerEmail(order, shippingAddress),
+      }).catch(err => {
+        console.error('Failed to send customer email:', err);
+        return { error: err.message };
+      })
+    );
 
+    // Send all emails in parallel
+    await Promise.allSettled(emailPromises);
 
     return NextResponse.json({
       success: true,
@@ -187,7 +159,7 @@ export async function POST(request) {
         paymentMethod: order.paymentMethod,
         paymentStatus: order.paymentStatus,
         paymentNote: order.paymentNote,
-        paymentUrl: order.paymentUrl, // send URL to frontend
+        paymentUrl: order.paymentUrl,
         items: order.items,
         shippingAddress: order.shippingAddress,
         createdAt: order.createdAt,

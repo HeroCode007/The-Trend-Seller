@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
-import { sendEmail } from '@/lib/email';
+import {
+    sendEmail,
+    paymentScreenshotAdminEmail,
+    paymentScreenshotCustomerEmail
+} from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -91,7 +95,7 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        // --- Convert file to Base64 (works on Vercel!) ---
+        // --- Convert file to Base64 ---
         const arrayBuffer = await screenshotFile.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64Data = buffer.toString('base64');
@@ -100,7 +104,7 @@ export async function POST(request) {
         console.log('File converted to base64, size:', base64Data.length);
 
         // --- Update order in database ---
-        order.paymentScreenshot = dataUrl; // Store Base64 data URL
+        order.paymentScreenshot = dataUrl;
         order.paymentScreenshotUploadedAt = new Date();
         order.paymentStatus = 'awaiting_verification';
         order.paymentMethod = paymentMethod;
@@ -109,7 +113,7 @@ export async function POST(request) {
 
         console.log('Order updated successfully');
 
-        // --- Send Emails ---
+        // --- Send Professional Emails ---
         const emailPromises = [];
 
         // Get admin emails from environment variable
@@ -117,45 +121,22 @@ export async function POST(request) {
             ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim())
             : [];
 
+        // Also check single admin email
+        if (process.env.ADMIN_EMAIL && !adminEmails.includes(process.env.ADMIN_EMAIL)) {
+            adminEmails.push(process.env.ADMIN_EMAIL);
+        }
+
         if (adminEmails.length === 0) {
             console.warn('No admin emails configured. Skipping admin notifications.');
         }
 
-        // Calculate amounts
-        const totalAmountWithDelivery = (order.totalAmount || 0);
-        const subtotalAmount = totalAmountWithDelivery - (order.deliveryCharges || 0);
-
-        // Admin emails (with embedded base64 image)
+        // Admin emails - Professional template with embedded screenshot
         adminEmails.forEach(email => {
             emailPromises.push(
                 sendEmail({
                     to: email,
-                    subject: `Payment Verification Required: ${orderNumber}`,
-                    html: `
-                <h2>Payment Screenshot Received</h2>
-                <p>Order Number: <strong>${order.orderNumber}</strong></p>
-                <p>Payment Method: <strong>${paymentMethod.toUpperCase().replace('-', ' ')}</strong></p>
-                <hr>
-                <h3>Order Summary:</h3>
-                <ul>
-                    ${order.items.map(item =>
-                        `<li>${item.name} × ${item.quantity} - ₨${(item.price * item.quantity).toFixed(2)}</li>`
-                    ).join('')}
-                </ul>
-                <p><strong>Subtotal:</strong> ₨${subtotalAmount.toFixed(2)}</p>
-                <p><strong>Delivery Charges:</strong> ${order.deliveryCharges === 0 ? 'FREE' : `₨${order.deliveryCharges.toFixed(2)}`}</p>
-                <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
-                <hr>
-                <h3>Customer Details:</h3>
-                <p>Name: ${order.shippingAddress.fullName || 'N/A'}</p>
-                <p>Email: ${order.shippingAddress.email}</p>
-                <p>Phone: ${order.shippingAddress.phone || 'N/A'}</p>
-                <p>Status: <strong>Awaiting Verification</strong></p>
-                <h3>Payment Screenshot:</h3>
-                <img src="${dataUrl}" alt="Payment Screenshot" style="max-width: 600px; border: 1px solid #ccc; border-radius: 8px;" />
-                <hr>
-                <p><strong>⚠️ Action Required:</strong> Please verify the payment screenshot and update the order status.</p>
-            `,
+                    subject: `📸 Payment Verification Required: ${orderNumber} - Rs. ${order.totalAmount?.toLocaleString()}`,
+                    html: paymentScreenshotAdminEmail(order),
                 }).catch(err => {
                     console.error(`Failed to send admin email to ${email}:`, err);
                     return { error: err.message, email };
@@ -163,30 +144,12 @@ export async function POST(request) {
             );
         });
 
-        // Customer email
+        // Customer email - Professional template
         emailPromises.push(
             sendEmail({
                 to: order.shippingAddress.email,
-                subject: `Payment Screenshot Received: ${orderNumber}`,
-                html: `
-            <h2>Thank you for your payment!</h2>
-            <p>Order Number: <strong>${order.orderNumber}</strong></p>
-            <p>Payment Method: <strong>${paymentMethod.toUpperCase().replace('-', ' ')}</strong></p>
-            <p>Status: <strong>Awaiting Verification</strong></p>
-            <hr>
-            <h3>Order Summary:</h3>
-            <ul>
-                ${order.items.map(item =>
-                    `<li>${item.name} × ${item.quantity} - ₨${(item.price * item.quantity).toFixed(2)}</li>`
-                ).join('')}
-            </ul>
-            <p><strong>Subtotal:</strong> ₨${subtotalAmount.toFixed(2)}</p>
-            <p><strong>Delivery Charges:</strong> ${order.deliveryCharges === 0 ? 'FREE' : `₨${order.deliveryCharges.toFixed(2)}`}</p>
-            <p style="font-size: 18px; color: #059669;"><strong>Total Amount: ₨${totalAmountWithDelivery.toFixed(2)}</strong></p>
-            <hr>
-            <p>We have received your payment screenshot and it is now under verification. You will receive a confirmation email once your payment is verified.</p>
-            <p>Thank you for shopping with us!</p>
-        `
+                subject: `📸 Payment Received #${orderNumber} - Verification in Progress`,
+                html: paymentScreenshotCustomerEmail(order),
             }).catch(err => {
                 console.error('Failed to send customer email:', err);
                 return { error: err.message, email: order.shippingAddress.email };
@@ -217,7 +180,6 @@ export async function POST(request) {
     } catch (error) {
         console.error('Error processing payment verification:', error);
 
-        // Return appropriate error message
         if (error.name === 'ValidationError') {
             return NextResponse.json({
                 success: false,
