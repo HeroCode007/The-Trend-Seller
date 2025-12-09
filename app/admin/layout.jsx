@@ -32,7 +32,7 @@ export default function AdminLayout({ children }) {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+        const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'SAIF123';
         if (password === adminPassword) {
             sessionStorage.setItem('adminAuth', 'true');
             setIsAuthenticated(true);

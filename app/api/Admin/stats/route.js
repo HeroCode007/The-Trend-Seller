@@ -24,7 +24,7 @@ export async function GET() {
         paymentsByStatusResult.forEach(item => { paymentsByStatus[item._id] = item.count; });
 
         const pendingOrders = await Order.countDocuments({ status: 'pending' });
-        const totalProducts = products.length;
+        const totalProducts = products?.length || 0;
 
         return NextResponse.json({
             success: true,
