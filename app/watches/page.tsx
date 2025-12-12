@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { premiumWatches, casualWatches, stylishWatches } from '@/lib/products';
 
-// Define product type based on your products.js structure
+// Define product type based on Product.js structure
 interface Product {
   id: number;
   slug: string;
@@ -405,6 +405,7 @@ export default function WatchesPage() {
                 </div>
               </div>
 
+
               {/* Stock Filter */}
               <div>
                 <label className="block text-sm font-semibold text-neutral-700 mb-3">Availability</label>
@@ -430,6 +431,7 @@ export default function WatchesPage() {
             </div>
           </div>
         </div>
+
 
         {/* Products Grid */}
         {filteredWatches.length > 0 ? (
@@ -587,7 +589,7 @@ function GridProductCard({ product }: { product: WatchWithCategory }) {
       </button>
 
       {/* Image Container */}
-      <Link href={`/product/${product.slug}`}>
+      <Link href={`/watches/${product.slug}`}>
         <div className="relative aspect-square bg-gradient-to-br from-neutral-50 to-neutral-100 overflow-hidden">
           <div className={`relative w-full h-full p-6 transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}>
             <Image
@@ -625,7 +627,7 @@ function GridProductCard({ product }: { product: WatchWithCategory }) {
         </div>
 
         {/* Name */}
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/watches/${product.slug}`}>
           <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 hover:text-amber-600 transition-colors leading-snug">
             {product.name}
           </h3>
@@ -666,7 +668,7 @@ function ListProductCard({ product }: { product: WatchWithCategory }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-4 sm:gap-6 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 p-4 ${isOutOfStock ? 'opacity-75' : ''}`}>
       {/* Image */}
-      <Link href={`/product/${product.slug}`} className="flex-shrink-0">
+      <Link href={`/watches/${product.slug}`} className="flex-shrink-0">
         <div className="relative w-full sm:w-48 h-48 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl overflow-hidden">
           <Image
             src={product.image}
@@ -710,7 +712,7 @@ function ListProductCard({ product }: { product: WatchWithCategory }) {
             </div>
           </div>
 
-          <Link href={`/product/${product.slug}`}>
+          <Link href={`/watches/${product.slug}`}>
             <h3 className="text-lg font-semibold text-neutral-900 hover:text-amber-600 transition-colors mb-2">
               {product.name}
             </h3>
