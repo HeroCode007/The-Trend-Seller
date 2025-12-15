@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
-import { products } from '@/lib/products';
+import Product from '@/models/Product';
 
 export async function GET() {
     try {
@@ -24,7 +24,9 @@ export async function GET() {
         paymentsByStatusResult.forEach(item => { paymentsByStatus[item._id] = item.count; });
 
         const pendingOrders = await Order.countDocuments({ status: 'pending' });
-        const totalProducts = products?.length || 0;
+
+        // Get product count from database instead of static file
+        const totalProducts = await Product.countDocuments();
 
         return NextResponse.json({
             success: true,

@@ -14,6 +14,7 @@ const ProductSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true
+        // Removed index: true since we define it below with schema.index()
     },
     productCode: {
         type: String,
@@ -21,6 +22,7 @@ const ProductSchema = new mongoose.Schema({
         unique: true,
         uppercase: true,
         trim: true
+        // Removed index: true since we define it below with schema.index()
     },
 
     // Pricing
@@ -107,9 +109,9 @@ const ProductSchema = new mongoose.Schema({
 });
 
 // Create indexes for better query performance
-ProductSchema.index({ slug: 1 });
+// Note: slug and productCode already have unique:true which creates an index
+// So we only add additional composite indexes here
 ProductSchema.index({ category: 1 });
-ProductSchema.index({ productCode: 1 });
 ProductSchema.index({ isActive: 1, category: 1 });
 ProductSchema.index({ price: 1 });
 
