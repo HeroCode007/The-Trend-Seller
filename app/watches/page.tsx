@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { premiumWatches, casualWatches, stylishWatches } from '@/lib/products';
+import { premiumWatches as staticPremiumWatches, casualWatches as staticCasualWatches, stylishWatches as staticStylishWatches } from '@/lib/products';
 
 // Define product type based on Product.js structure
 interface Product {
-  id: number;
+  id: number | string;
   slug: string;
   name: string;
   productCode: string;
@@ -24,13 +24,6 @@ interface WatchWithCategory extends Product {
   watchCategory: 'premium' | 'casual' | 'stylish';
 }
 
-// Combine all watches with category tags
-const allWatches: WatchWithCategory[] = [
-  ...premiumWatches.map((w: Product) => ({ ...w, watchCategory: 'premium' as const })),
-  ...casualWatches.map((w: Product) => ({ ...w, watchCategory: 'casual' as const })),
-  ...stylishWatches.map((w: Product) => ({ ...w, watchCategory: 'stylish' as const })),
-];
-
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-az' | 'name-za';
 type CategoryFilter = 'all' | 'premium' | 'casual' | 'stylish';
 type PriceRange = 'all' | 'under-2000' | '2000-4000' | '4000-4500' | 'above-4500';
@@ -43,6 +36,59 @@ export default function WatchesPage() {
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+
+  // State for dynamic data from database
+  const [premiumWatches, setPremiumWatches] = useState<Product[]>(staticPremiumWatches);
+  const [casualWatches, setCasualWatches] = useState<Product[]>(staticCasualWatches);
+  const [stylishWatches, setStylishWatches] = useState<Product[]>(staticStylishWatches);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+  // Fetch products from database
+  useEffect(() => {
+    async function fetchAllProducts() {
+      try {
+        const [premiumRes, casualRes, stylishRes] = await Promise.all([
+          fetch('/api/products?category=premium-watches', { cache: 'no-store' }),
+          fetch('/api/products?category=casual-watches', { cache: 'no-store' }),
+          fetch('/api/products?category=stylish-watches', { cache: 'no-store' })
+        ]);
+
+        if (premiumRes.ok) {
+          const data = await premiumRes.json();
+          if (data.success && data.products.length > 0) {
+            setPremiumWatches(data.products);
+          }
+        }
+
+        if (casualRes.ok) {
+          const data = await casualRes.json();
+          if (data.success && data.products.length > 0) {
+            setCasualWatches(data.products);
+          }
+        }
+
+        if (stylishRes.ok) {
+          const data = await stylishRes.json();
+          if (data.success && data.products.length > 0) {
+            setStylishWatches(data.products);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch products from database:', error);
+        // Falls back to static data
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    }
+    fetchAllProducts();
+  }, []);
+
+  // Combine all watches with category tags
+  const allWatches: WatchWithCategory[] = useMemo(() => [
+    ...premiumWatches.map((w: Product) => ({ ...w, watchCategory: 'premium' as const })),
+    ...casualWatches.map((w: Product) => ({ ...w, watchCategory: 'casual' as const })),
+    ...stylishWatches.map((w: Product) => ({ ...w, watchCategory: 'stylish' as const })),
+  ], [premiumWatches, casualWatches, stylishWatches]);
 
   // Filter and sort watches
   const filteredWatches = useMemo(() => {
@@ -113,13 +159,16 @@ export default function WatchesPage() {
 
   // Calculate price stats
   const priceStats = useMemo(() => {
+    if (allWatches.length === 0) {
+      return { min: 0, max: 0, avg: 0 };
+    }
     const prices = allWatches.map(w => w.price);
     return {
       min: Math.min(...prices),
       max: Math.max(...prices),
       avg: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
     };
-  }, []);
+  }, [allWatches]);
 
   return (
     <div className="min-h-screen bg-stone-50">

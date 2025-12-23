@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,9 +22,10 @@ import {
     BadgeCheck,
     Fingerprint,
     Timer,
-    Settings2
+    Settings2,
+    Loader2
 } from 'lucide-react';
-import { premiumWatches } from '@/lib/products';
+import { premiumWatches as staticPremiumWatches } from '@/lib/products';
 
 // Animation variants
 const containerVariants = {
@@ -307,6 +308,31 @@ export default function PremiumWatchesPage() {
     const [sortBy, setSortBy] = useState('featured');
     const [showFilters, setShowFilters] = useState(false);
     const [priceRange, setPriceRange] = useState('all');
+    const [premiumWatches, setPremiumWatches] = useState(staticPremiumWatches);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+    // Fetch products from database
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                const response = await fetch('/api/products?category=premium-watches', {
+                    cache: 'no-store'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.products.length > 0) {
+                        setPremiumWatches(data.products);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch products from database:', error);
+                // Falls back to staticPremiumWatches
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        }
+        fetchProducts();
+    }, []);
 
     // Filter and sort watches
     const filteredWatches = useMemo(() => {
@@ -339,22 +365,25 @@ export default function PremiumWatchesPage() {
         }
 
         return watches;
-    }, [sortBy, priceRange]);
+    }, [premiumWatches, sortBy, priceRange]);
 
     const hasActiveFilters = priceRange !== 'all';
 
     // Calculate stats
     const priceStats = useMemo(() => {
+        if (premiumWatches.length === 0) {
+            return { min: 0, max: 0, count: 0 };
+        }
         const prices = premiumWatches.map(w => w.price);
         return {
             min: Math.min(...prices),
             max: Math.max(...prices),
             count: premiumWatches.length
         };
-    }, []);
+    }, [premiumWatches]);
 
     // Dynamic features
-    const dynamicFeatures = useMemo(() => extractPremiumFeatures(premiumWatches), []);
+    const dynamicFeatures = useMemo(() => extractPremiumFeatures(premiumWatches), [premiumWatches]);
 
     return (
         <div className="min-h-screen bg-neutral-950">

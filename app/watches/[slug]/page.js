@@ -1,9 +1,40 @@
 import { premiumWatches, casualWatches, stylishWatches, getProductBySlug } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import WatchDetailClient from './WatchDetail';
+import connectDB from '@/lib/db';
+import Product from '@/models/Product';
 
 // Combine all watches for static generation
 const allWatches = [...premiumWatches, ...casualWatches, ...stylishWatches];
+
+// Fetch product from database or fallback to static
+async function getProduct(slug) {
+  try {
+    await connectDB();
+    const product = await Product.findOne({ slug, isActive: true }).lean();
+
+    if (product) {
+      return {
+        id: product._id.toString(),
+        slug: product.slug,
+        name: product.name,
+        productCode: product.productCode,
+        price: product.price,
+        image: product.image,
+        images: product.images || [],
+        description: product.description || '',
+        features: product.features || [],
+        category: product.category,
+        inStock: product.inStock,
+      };
+    }
+  } catch (error) {
+    console.error('Failed to fetch product from database:', error);
+  }
+
+  // Fallback to static product
+  return getProductBySlug(slug);
+}
 
 export async function generateStaticParams() {
   return allWatches.map((watch) => ({
@@ -13,7 +44,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProduct(slug);
 
   if (!product) {
     return {
@@ -34,7 +65,7 @@ export async function generateMetadata({ params }) {
 
 export default async function WatchDetailPage({ params }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProduct(slug);
 
   if (!product) {
     notFound();

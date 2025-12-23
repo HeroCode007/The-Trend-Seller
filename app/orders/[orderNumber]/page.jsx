@@ -1,31 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, User, Phone, Mail, MapPin, Package, Truck, CheckCircle, Clock, Loader2, Save, AlertCircle, Calendar, XCircle } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, MapPin, Package, Truck, CheckCircle, Clock, Loader2, AlertCircle, Calendar, XCircle } from 'lucide-react';
 
-export default function AdminOrderDetailPage({ params }) {
+export default function CustomerOrderDetailPage({ params }) {
     const { orderNumber } = params;
-    const router = useRouter();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [status, setStatus] = useState('');
-    const [paymentStatus, setPaymentStatus] = useState('');
     const [message, setMessage] = useState({ type: '', text: '' });
 
     useEffect(() => { fetchOrder(); }, [orderNumber]);
 
     const fetchOrder = async () => {
         try {
-            const res = await fetch(`/api/admin/orders/${orderNumber}`);
+            // Customer view - use public API
+            const res = await fetch(`/api/orders/${orderNumber}`);
             const data = await res.json();
             if (data.success) {
                 setOrder(data.order);
-                setStatus(data.order.status);
-                setPaymentStatus(data.order.paymentStatus);
             } else {
                 setMessage({ type: 'error', text: 'Order not found' });
             }
@@ -34,29 +28,6 @@ export default function AdminOrderDetailPage({ params }) {
             setMessage({ type: 'error', text: 'Failed to load order' });
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleUpdateOrder = async () => {
-        setSaving(true);
-        setMessage({ type: '', text: '' });
-        try {
-            const res = await fetch(`/api/admin/orders/${orderNumber}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status, paymentStatus }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setMessage({ type: 'success', text: 'Order updated successfully!' });
-                setOrder(data.order);
-            } else {
-                setMessage({ type: 'error', text: data.error || 'Failed to update order' });
-            }
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to update order' });
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -91,7 +62,7 @@ export default function AdminOrderDetailPage({ params }) {
             <div className="text-center py-12">
                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-neutral-900">Order not found</h2>
-                <Link href="/admin/orders" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">← Back to Orders</Link>
+                <Link href="/" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">← Back to Home</Link>
             </div>
         );
     }
@@ -102,7 +73,7 @@ export default function AdminOrderDetailPage({ params }) {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/admin/orders" className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"><ArrowLeft className="w-5 h-5 text-neutral-600" /></Link>
+                    <Link href="/" className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"><ArrowLeft className="w-5 h-5 text-neutral-600" /></Link>
                     <div>
                         <h1 className="text-2xl font-bold text-neutral-900">Order {order.orderNumber}</h1>
                         <p className="text-neutral-500 flex items-center gap-2 mt-1">
@@ -188,33 +159,7 @@ export default function AdminOrderDetailPage({ params }) {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-                        <h2 className="text-lg font-semibold text-neutral-900 mb-4">Update Order</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Order Status</label>
-                                <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all">
-                                    <option value="pending">Pending</option>
-                                    <option value="processing">Processing</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Payment Status</label>
-                                <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all">
-                                    <option value="pending">Pending</option>
-                                    <option value="awaiting_verification">Awaiting Verification</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="failed">Failed</option>
-                                </select>
-                            </div>
-                            <button onClick={handleUpdateOrder} disabled={saving} className="w-full py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                                {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</> : <><Save className="w-4 h-4" />Save Changes</>}
-                            </button>
-                        </div>
-                    </div>
+                    {/* Admin Update Section Removed - This is customer view */}
 
                     <div className="bg-white rounded-2xl border border-neutral-200 p-6">
                         <h2 className="text-lg font-semibold text-neutral-900 mb-4">Customer</h2>

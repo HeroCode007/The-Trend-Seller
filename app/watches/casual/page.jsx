@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -30,9 +30,10 @@ import {
     Footprints,
     Flame,
     Target,
-    HeartPulse
+    HeartPulse,
+    Loader2
 } from 'lucide-react';
-import { casualWatches } from '@/lib/products';
+import { casualWatches as staticCasualWatches } from '@/lib/products';
 
 // Animation variants
 const containerVariants = {
@@ -346,6 +347,31 @@ export default function CasualWatchesPage() {
     const [sortBy, setSortBy] = useState('featured');
     const [showFilters, setShowFilters] = useState(false);
     const [priceRange, setPriceRange] = useState('all');
+    const [casualWatches, setCasualWatches] = useState(staticCasualWatches);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+    // Fetch products from database
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                const response = await fetch('/api/products?category=casual-watches', {
+                    cache: 'no-store'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.products.length > 0) {
+                        setCasualWatches(data.products);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch products from database:', error);
+                // Falls back to staticCasualWatches
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        }
+        fetchProducts();
+    }, []);
 
     // Filter and sort watches
     const filteredWatches = useMemo(() => {
@@ -378,22 +404,28 @@ export default function CasualWatchesPage() {
         }
 
         return watches;
-    }, [sortBy, priceRange]);
+    }, [casualWatches, sortBy, priceRange]);
 
     const hasActiveFilters = priceRange !== 'all';
 
     // Calculate stats
     const priceStats = useMemo(() => {
+        if (casualWatches.length === 0) {
+            return { min: 0, max: 0, count: 0 };
+        }
         const prices = casualWatches.map(w => w.price);
         return {
             min: Math.min(...prices),
             max: Math.max(...prices),
             count: casualWatches.length
         };
-    }, []);
+    }, [casualWatches]);
 
     // Extract dynamic features from actual watch data
     const dynamicFeatures = useMemo(() => {
+        if (casualWatches.length === 0) {
+            return [];
+        }
         // Collect all features from watches
         const allFeatures = [];
         casualWatches.forEach(watch => {
@@ -471,7 +503,7 @@ export default function CasualWatchesPage() {
         }
 
         return sortedCategories;
-    }, []);
+    }, [casualWatches]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-stone-100 via-stone-50 to-white">
@@ -782,7 +814,12 @@ export default function CasualWatchesPage() {
                 </motion.div>
 
                 {/* Products Grid */}
-                {filteredWatches.length > 0 ? (
+                {isLoadingProducts ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <Loader2 className="w-12 h-12 text-amber-500 animate-spin mb-4" />
+                        <p className="text-stone-600 font-medium">Loading watches...</p>
+                    </div>
+                ) : filteredWatches.length > 0 ? (
                     <motion.div
                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                         variants={containerVariants}
@@ -791,7 +828,7 @@ export default function CasualWatchesPage() {
                     >
                         {filteredWatches.map((watch) => (
                             <EnhancedProductCard
-                                key={watch.id}
+                                key={watch.id || watch._id}
                                 product={watch}
                             />
                         ))}

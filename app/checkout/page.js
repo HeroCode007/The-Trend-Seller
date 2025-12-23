@@ -44,6 +44,8 @@ export default function CheckoutPage() {
         country: 'Pakistan',
         paymentMethod: 'bank-transfer',
     });
+    const [formErrors, setFormErrors] = useState({});
+    const [touched, setTouched] = useState({});
 
     useEffect(() => {
         fetchCart();
@@ -55,10 +57,62 @@ export default function CheckoutPage() {
         }
     }, [loading, cart.items.length, router]);
 
+    const validateField = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'fullName':
+                if (!value.trim()) error = 'Name is required';
+                else if (value.trim().length < 3) error = 'Name must be at least 3 characters';
+                break;
+            case 'email':
+                if (!value.trim()) error = 'Email is required';
+                else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Invalid email address';
+                break;
+            case 'phone':
+                if (!value.trim()) error = 'Phone is required';
+                else if (!/^(\+92|0)?3\d{9}$/.test(value.replace(/[-\s]/g, ''))) error = 'Invalid Pakistani phone number';
+                break;
+            case 'address':
+                if (!value.trim()) error = 'Address is required';
+                else if (value.trim().length < 10) error = 'Please provide complete address';
+                break;
+            case 'city':
+                if (!value.trim()) error = 'City is required';
+                break;
+            case 'postalCode':
+                if (!value.trim()) error = 'Postal code is required';
+                break;
+        }
+        return error;
+    };
+
     const handleChange = (e) => {
+        const { name, value } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
+        });
+
+        // Real-time validation
+        if (touched[name]) {
+            const error = validateField(name, value);
+            setFormErrors({
+                ...formErrors,
+                [name]: error,
+            });
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        setTouched({
+            ...touched,
+            [name]: true,
+        });
+        const error = validateField(name, value);
+        setFormErrors({
+            ...formErrors,
+            [name]: error,
         });
     };
 
@@ -67,6 +121,7 @@ export default function CheckoutPage() {
         setSubmitting(true);
 
         try {
+            // Client-side validation
             if (!['bank-transfer', 'jazzcash', 'easypaisa'].includes(formData.paymentMethod)) {
                 toast({
                     title: 'Invalid Payment Method',
@@ -76,6 +131,12 @@ export default function CheckoutPage() {
                 setSubmitting(false);
                 return;
             }
+
+            // Optimistic UI: Show success immediately
+            toast({
+                title: 'Processing Order...',
+                description: 'Please wait while we process your order',
+            });
 
             const response = await fetch('/api/checkout', {
                 method: 'POST',
@@ -108,12 +169,16 @@ export default function CheckoutPage() {
 
             const { orderNumber } = data.order;
 
+            // Success with animation delay
             toast({
-                title: 'Order Placed Successfully!',
-                description: 'Redirecting to payment...',
+                title: '✨ Order Placed Successfully!',
+                description: 'Redirecting to payment verification...',
             });
 
-            router.push(`/payment-verification/${orderNumber}?method=${formData.paymentMethod}`);
+            // Smooth transition delay
+            setTimeout(() => {
+                router.push(`/payment-verification/${orderNumber}?method=${formData.paymentMethod}`);
+            }, 800);
 
         } catch (error) {
             console.error('Order Error:', error);
@@ -122,7 +187,6 @@ export default function CheckoutPage() {
                 description: error.message || 'Something went wrong while placing order',
                 variant: 'destructive',
             });
-        } finally {
             setSubmitting(false);
         }
     };
@@ -269,9 +333,19 @@ export default function CheckoutPage() {
                                                 placeholder="Enter your full name"
                                                 value={formData.fullName}
                                                 onChange={handleChange}
+                                                onBlur={handleBlur}
                                                 onFocus={() => setActiveStep(1)}
-                                                className="w-full px-4 py-3.5 bg-neutral-50/50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all duration-200 placeholder:text-neutral-400"
+                                                className={`w-full px-4 py-3.5 bg-neutral-50/50 border rounded-xl focus:ring-2 transition-all duration-200 placeholder:text-neutral-400 ${
+                                                    formErrors.fullName && touched.fullName
+                                                        ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                        : 'border-neutral-200 focus:ring-amber-500/20 focus:border-amber-500'
+                                                }`}
                                             />
+                                            {formErrors.fullName && touched.fullName && (
+                                                <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                                    <span className="text-xs">⚠️</span> {formErrors.fullName}
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* Email & Phone */}
@@ -289,9 +363,19 @@ export default function CheckoutPage() {
                                                     placeholder="your@email.com"
                                                     value={formData.email}
                                                     onChange={handleChange}
+                                                    onBlur={handleBlur}
                                                     onFocus={() => setActiveStep(1)}
-                                                    className="w-full px-4 py-3.5 bg-neutral-50/50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all duration-200 placeholder:text-neutral-400"
+                                                    className={`w-full px-4 py-3.5 bg-neutral-50/50 border rounded-xl focus:ring-2 transition-all duration-200 placeholder:text-neutral-400 ${
+                                                        formErrors.email && touched.email
+                                                            ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                            : 'border-neutral-200 focus:ring-amber-500/20 focus:border-amber-500'
+                                                    }`}
                                                 />
+                                                {formErrors.email && touched.email && (
+                                                    <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                                        <span className="text-xs">⚠️</span> {formErrors.email}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="group">
                                                 <label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
@@ -306,9 +390,19 @@ export default function CheckoutPage() {
                                                     placeholder="03XX-XXXXXXX"
                                                     value={formData.phone}
                                                     onChange={handleChange}
+                                                    onBlur={handleBlur}
                                                     onFocus={() => setActiveStep(1)}
-                                                    className="w-full px-4 py-3.5 bg-neutral-50/50 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all duration-200 placeholder:text-neutral-400"
+                                                    className={`w-full px-4 py-3.5 bg-neutral-50/50 border rounded-xl focus:ring-2 transition-all duration-200 placeholder:text-neutral-400 ${
+                                                        formErrors.phone && touched.phone
+                                                            ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                            : 'border-neutral-200 focus:ring-amber-500/20 focus:border-amber-500'
+                                                    }`}
                                                 />
+                                                {formErrors.phone && touched.phone && (
+                                                    <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                                        <span className="text-xs">⚠️</span> {formErrors.phone}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 

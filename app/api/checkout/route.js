@@ -11,9 +11,13 @@ import {
 
 export async function POST(request) {
   try {
-    await connectDB();
-    const sessionId = await getSessionId();
-    const body = await request.json();
+    // Parallel operations for better performance
+    const [_, sessionId, body] = await Promise.all([
+      connectDB(),
+      getSessionId(),
+      request.json()
+    ]);
+
     const { shippingAddress, paymentMethod } = body;
 
     // 🧾 Validate inputs
@@ -91,31 +95,33 @@ export async function POST(request) {
         paymentStatus = 'pending';
     }
 
-    // 📦 Create the order
-    const order = await Order.create({
-      items: cart.items.map((item) => ({
-        productId: item.productId,
-        slug: item.slug,
-        name: item.name,
-        price: item.price,
-        image: item.image,
-        quantity: item.quantity,
-      })),
-      shippingAddress,
-      totalAmount,
-      deliveryCharges,
-      paymentMethod,
-      paymentStatus,
-      paymentNote,
-      paymentUrl,
-      sessionId,
-      status: 'pending',
-    });
-
-    // 🧹 Clear the cart
-    cart.items = [];
-    cart.updatedAt = new Date();
-    await cart.save();
+    // 📦 Create the order and clear cart in parallel for better performance
+    const [order] = await Promise.all([
+      Order.create({
+        items: cart.items.map((item) => ({
+          productId: item.productId,
+          slug: item.slug,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity,
+        })),
+        shippingAddress,
+        totalAmount,
+        deliveryCharges,
+        paymentMethod,
+        paymentStatus,
+        paymentNote,
+        paymentUrl,
+        sessionId,
+        status: 'pending',
+      }),
+      // 🧹 Clear the cart in parallel
+      Cart.updateOne(
+        { sessionId },
+        { $set: { items: [], updatedAt: new Date() } }
+      )
+    ]);
 
     // 📧 Send professional email notifications
     const emailPromises = [];

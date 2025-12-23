@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, Upload, AlertCircle, Copy, Check, X } from 'lucide-react';
+import { compressImage, formatFileSize } from '@/lib/imageCompression';
 
 export default function PaymentVerificationPage({ params }) {
     const searchParams = useSearchParams();
@@ -20,8 +21,12 @@ export default function PaymentVerificationPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [accountLoading, setAccountLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [uploadSuccess, setUploadSuccess] = useState(false); // ✅ New state for success
+    const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0); // Progress tracking
+    const [compressing, setCompressing] = useState(false); // Compression state
     const [screenshot, setScreenshot] = useState(null);
+    const [originalSize, setOriginalSize] = useState(0); // Original file size
+    const [compressedSize, setCompressedSize] = useState(0); // Compressed file size
     const [previewUrl, setPreviewUrl] = useState(null);
     const [copiedName, setCopiedName] = useState(false);
     const [copiedNumber, setCopiedNumber] = useState(false);
@@ -131,8 +136,8 @@ export default function PaymentVerificationPage({ params }) {
         }
     };
 
-    // Handle file selection with improved validation
-    const handleFileChange = (e) => {
+    // Handle file selection with compression
+    const handleFileChange = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -158,16 +163,73 @@ export default function PaymentVerificationPage({ params }) {
             return;
         }
 
-        setScreenshot(file);
+        setOriginalSize(file.size);
 
-        // Cleanup previous preview URL
-        if (previewUrl?.startsWith('blob:')) {
-            URL.revokeObjectURL(previewUrl);
+        // Compress image if larger than 1MB
+        if (file.size > 1024 * 1024) {
+            setCompressing(true);
+            toast({
+                title: 'Optimizing Image',
+                description: 'Compressing image for faster upload...',
+            });
+
+            try {
+                const compressedFile = await compressImage(file, {
+                    maxSizeMB: 0.8,
+                    maxWidthOrHeight: 1920,
+                    quality: 0.85,
+                    fileType: file.type
+                });
+
+                setCompressedSize(compressedFile.size);
+                setScreenshot(compressedFile);
+
+                // Show compression results
+                const savedBytes = file.size - compressedFile.size;
+                const savedPercent = Math.round((savedBytes / file.size) * 100);
+
+                toast({
+                    title: '✨ Image Optimized',
+                    description: `Reduced by ${savedPercent}% (${formatFileSize(savedBytes)} saved)`,
+                });
+
+                // Cleanup previous preview URL
+                if (previewUrl?.startsWith('blob:')) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+
+                // Use compressed image for preview
+                const objectUrl = URL.createObjectURL(compressedFile);
+                setPreviewUrl(objectUrl);
+            } catch (error) {
+                console.error('Compression error:', error);
+                toast({
+                    title: 'Compression Failed',
+                    description: 'Using original image instead',
+                    variant: 'destructive'
+                });
+
+                // Fall back to original file
+                setScreenshot(file);
+                setCompressedSize(file.size);
+                const objectUrl = URL.createObjectURL(file);
+                setPreviewUrl(objectUrl);
+            } finally {
+                setCompressing(false);
+            }
+        } else {
+            // Small file, no compression needed
+            setCompressedSize(file.size);
+            setScreenshot(file);
+
+            // Cleanup previous preview URL
+            if (previewUrl?.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            setPreviewUrl(objectUrl);
         }
-
-        // Use URL.createObjectURL for better performance
-        const objectUrl = URL.createObjectURL(file);
-        setPreviewUrl(objectUrl);
     };
 
     // Handle removing screenshot
@@ -183,7 +245,7 @@ export default function PaymentVerificationPage({ params }) {
         if (fileInput) fileInput.value = '';
     };
 
-    // Handle form submit
+    // Handle form submit with progress tracking
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -197,16 +259,32 @@ export default function PaymentVerificationPage({ params }) {
         }
 
         setUploading(true);
+        setUploadProgress(0);
+
         try {
             const formData = new FormData();
             formData.append('screenshot', screenshot);
             formData.append('orderNumber', orderNumber);
             formData.append('paymentMethod', METHOD_MAPPING[paymentMethod]);
 
+            // Simulate upload progress (since FormData doesn't support real progress easily)
+            const progressInterval = setInterval(() => {
+                setUploadProgress(prev => {
+                    if (prev >= 90) {
+                        clearInterval(progressInterval);
+                        return 90;
+                    }
+                    return prev + 10;
+                });
+            }, 200);
+
             const response = await fetch('/api/payment-verification', {
                 method: 'POST',
                 body: formData,
             });
+
+            clearInterval(progressInterval);
+            setUploadProgress(100);
 
             const data = await response.json();
 
@@ -217,26 +295,25 @@ export default function PaymentVerificationPage({ params }) {
                     variant: 'destructive'
                 });
                 setUploading(false);
+                setUploadProgress(0);
                 return;
             }
 
-            // ✅ Set success state to show success UI
+            // Set success state to show success UI
             setUploadSuccess(true);
 
             toast({
-                title: 'Success!',
+                title: '✨ Success!',
                 description: 'Payment screenshot uploaded successfully. Redirecting...'
             });
 
             // Clear the screenshot after successful upload
             handleRemoveScreenshot();
 
-            // ✅ Use window.location.replace for HARD redirect (no back button)
-            // Add a small delay so the user sees the success message
+            // Use window.location.replace for HARD redirect (no back button)
             redirectTimeoutRef.current = setTimeout(() => {
-                // Force browser to not cache and do a full page load
                 window.location.replace(`/orders/${orderNumber}?uploaded=true&t=${Date.now()}`);
-            }, 1000);
+            }, 1500);
 
         } catch (error) {
             console.error('Upload Error:', error);
@@ -246,6 +323,7 @@ export default function PaymentVerificationPage({ params }) {
                 variant: 'destructive'
             });
             setUploading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -541,15 +619,63 @@ export default function PaymentVerificationPage({ params }) {
                                 </ul>
                             </div>
 
+                            {/* Progress Bar */}
+                            {uploading && uploadProgress > 0 && (
+                                <div className="mb-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-sm font-medium text-neutral-700">
+                                            {uploadProgress < 100 ? 'Uploading...' : 'Processing...'}
+                                        </span>
+                                        <span className="text-sm font-bold text-neutral-900">{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full bg-neutral-200 rounded-full h-2.5 overflow-hidden">
+                                        <div
+                                            className="bg-gradient-to-r from-green-500 to-emerald-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Compression Indicator */}
+                            {compressing && (
+                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                                    <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                                    <div>
+                                        <p className="text-sm font-medium text-blue-900">Optimizing Image</p>
+                                        <p className="text-xs text-blue-700">Compressing for faster upload...</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* File Size Info */}
+                            {screenshot && compressedSize > 0 && !uploading && (
+                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p className="text-sm text-green-800">
+                                        <strong>Ready to upload:</strong> {formatFileSize(compressedSize)}
+                                        {originalSize !== compressedSize && (
+                                            <span className="ml-2 text-xs">
+                                                (Saved {Math.round((1 - compressedSize / originalSize) * 100)}%)
+                                            </span>
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+
                             <button
                                 onClick={handleSubmit}
-                                disabled={uploading || !screenshot}
+                                disabled={uploading || !screenshot || compressing}
                                 className="w-full bg-neutral-900 text-white px-6 py-4 rounded-lg font-semibold hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {uploading ? (
                                     <>
                                         <Loader2 className="h-5 w-5 animate-spin" />
-                                        Uploading...
+                                        {uploadProgress < 100 ? `Uploading ${uploadProgress}%` : 'Processing...'}
+                                    </>
+                                ) : compressing ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        Compressing Image...
                                     </>
                                 ) : (
                                     <>
