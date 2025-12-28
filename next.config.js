@@ -8,6 +8,8 @@ const nextConfig = {
       'i.postimg.cc',
       'postimg.cc',
       'iili.io',
+      'res.cloudinary.com',
+      'res-console.cloudinary.com',
     ],
     remotePatterns: [
       {
@@ -21,6 +23,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**.postimg.cc',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudinary.com',
       },
     ],
   },

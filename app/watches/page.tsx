@@ -36,6 +36,7 @@ export default function WatchesPage() {
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // State for dynamic data from database
   const [premiumWatches, setPremiumWatches] = useState<Product[]>(staticPremiumWatches);
@@ -94,6 +95,17 @@ export default function WatchesPage() {
   const filteredWatches = useMemo(() => {
     let watches = [...allWatches];
 
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      watches = watches.filter(w =>
+        w.name.toLowerCase().includes(query) ||
+        w.productCode.toLowerCase().includes(query) ||
+        w.description.toLowerCase().includes(query) ||
+        w.features.some(f => f.toLowerCase().includes(query))
+      );
+    }
+
     // Category filter
     if (activeCategory !== 'all') {
       watches = watches.filter(w => w.watchCategory === activeCategory);
@@ -146,16 +158,17 @@ export default function WatchesPage() {
     }
 
     return watches;
-  }, [activeCategory, priceRange, sortBy, stockFilter]);
+  }, [allWatches, searchQuery, activeCategory, priceRange, sortBy, stockFilter]);
 
   const clearFilters = () => {
     setActiveCategory('all');
     setPriceRange('all');
     setStockFilter('all');
     setSortBy('featured');
+    setSearchQuery('');
   };
 
-  const hasActiveFilters = activeCategory !== 'all' || priceRange !== 'all' || stockFilter !== 'all';
+  const hasActiveFilters = activeCategory !== 'all' || priceRange !== 'all' || stockFilter !== 'all' || searchQuery.trim() !== '';
 
   // Calculate price stats
   const priceStats = useMemo(() => {
@@ -329,6 +342,35 @@ export default function WatchesPage() {
 
         {/* Filters Bar */}
         <div className="sticky top-0 z-40 bg-stone-50/95 backdrop-blur-md border-b border-neutral-200 -mx-4 px-4 py-4 mb-8">
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative max-w-2xl">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search watches by name, brand, or features... (e.g., Rolex Yacht Master)"
+                className="w-full pl-12 pr-12 py-3.5 bg-white border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neutral-400 hover:text-neutral-600"
+                  aria-label="Clear search"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Left: Filter Toggle & Active Filters */}
             <div className="flex items-center gap-3">
@@ -345,7 +387,7 @@ export default function WatchesPage() {
                 <span className="font-medium">Filters</span>
                 {hasActiveFilters && (
                   <span className="w-5 h-5 flex items-center justify-center bg-amber-500 text-white text-xs font-bold rounded-full">
-                    {[activeCategory !== 'all', priceRange !== 'all', stockFilter !== 'all'].filter(Boolean).length}
+                    {[searchQuery.trim() !== '', activeCategory !== 'all', priceRange !== 'all', stockFilter !== 'all'].filter(Boolean).length}
                   </span>
                 )}
               </button>
@@ -363,7 +405,15 @@ export default function WatchesPage() {
             {/* Right: Results Count, Sort & View Toggle */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-neutral-500 hidden sm:inline">
-                Showing <strong className="text-neutral-900">{filteredWatches.length}</strong> of {allWatches.length} watches
+                {searchQuery.trim() ? (
+                  <>
+                    Found <strong className="text-neutral-900">{filteredWatches.length}</strong> {filteredWatches.length === 1 ? 'watch' : 'watches'} for "{searchQuery}"
+                  </>
+                ) : (
+                  <>
+                    Showing <strong className="text-neutral-900">{filteredWatches.length}</strong> of {allWatches.length} watches
+                  </>
+                )}
               </span>
 
               <select
@@ -508,18 +558,26 @@ export default function WatchesPage() {
           <div className="text-center py-20">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-neutral-100 flex items-center justify-center">
               <svg className="w-12 h-12 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                {searchQuery.trim() ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                )}
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">No watches found</h3>
+            <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+              {searchQuery.trim() ? `No results for "${searchQuery}"` : 'No watches found'}
+            </h3>
             <p className="text-neutral-500 mb-6 max-w-md mx-auto">
-              We couldn't find any watches matching your current filters. Try adjusting your selection.
+              {searchQuery.trim()
+                ? `We couldn't find any watches matching "${searchQuery}". Try different keywords or check the spelling.`
+                : 'We couldn\'t find any watches matching your current filters. Try adjusting your selection.'}
             </p>
             <button
               onClick={clearFilters}
               className="px-6 py-3 bg-neutral-900 text-white font-medium rounded-xl hover:bg-neutral-800 transition-colors"
             >
-              Clear All Filters
+              {searchQuery.trim() ? 'Clear Search & Filters' : 'Clear All Filters'}
             </button>
           </div>
         )}

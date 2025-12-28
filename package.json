@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "migrate:products": "node scripts/migrateProducts.js"
+    "migrate:products": "node scripts/migrateProducts.js",
+    "sync:products": "node scripts/sync-products.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

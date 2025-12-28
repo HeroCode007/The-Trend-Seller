@@ -89,24 +89,28 @@ export default function EditProductPage() {
         throw new Error('Product not found');
       }
       const data = await response.json();
+
+      // API returns { success: true, product: {...} }
+      const product = data.product || data;
+
       setFormData({
-        name: data.name || '',
-        slug: data.slug || '',
-        productCode: data.productCode || '',
-        category: data.category || 'premium-watches',
-        price: data.price?.toString() || '',
-        compareAtPrice: data.compareAtPrice?.toString() || '',
-        image: data.image || '',
-        images: data.images || [],
-        description: data.description || '',
-        features: data.features || [],
-        stockQuantity: data.stockQuantity || 0,
-        sortOrder: data.sortOrder || 0,
-        isActive: data.isActive ?? true,
-        inStock: data.inStock ?? true,
-        isFeatured: data.isFeatured ?? false,
-        metaTitle: data.metaTitle || '',
-        metaDescription: data.metaDescription || '',
+        name: product.name || '',
+        slug: product.slug || '',
+        productCode: product.productCode || '',
+        category: product.category || 'premium-watches',
+        price: product.price?.toString() || '',
+        compareAtPrice: product.compareAtPrice?.toString() || '',
+        image: product.image || '',
+        images: product.images || [],
+        description: product.description || '',
+        features: product.features || [],
+        stockQuantity: product.stockQuantity || 0,
+        sortOrder: product.sortOrder || 0,
+        isActive: product.isActive ?? true,
+        inStock: product.inStock ?? true,
+        isFeatured: product.isFeatured ?? false,
+        metaTitle: product.metaTitle || '',
+        metaDescription: product.metaDescription || '',
       });
     } catch (error) {
       showToast(error.message, 'error');
