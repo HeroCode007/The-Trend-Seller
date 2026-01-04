@@ -35,7 +35,7 @@ export async function GET(request) {
       Review.countDocuments(query)
     ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       reviews,
       pagination: {
@@ -45,6 +45,13 @@ export async function GET(request) {
         pages: Math.ceil(totalReviews / limit)
       }
     });
+
+    // Add cache control headers to prevent mobile caching issues
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   } catch (error) {
     console.error('Error fetching reviews:', error);
     return NextResponse.json(

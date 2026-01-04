@@ -14,11 +14,8 @@ import {
     Loader2,
     MessageSquare,
     RefreshCw,
-    Filter,
     AlertTriangle,
-    Eye,
-    Calendar,
-    User
+    Eye
 } from 'lucide-react';
 
 export default function AdminReviewsPage() {
@@ -29,7 +26,6 @@ export default function AdminReviewsPage() {
     const [statusFilter, setStatusFilter] = useState('pending'); // all, pending, approved
     const [currentPage, setCurrentPage] = useState(1);
     const [pagination, setPagination] = useState(null);
-    const [showFilters, setShowFilters] = useState(false);
     const [deleteModal, setDeleteModal] = useState({ open: false, review: null });
     const [actionLoading, setActionLoading] = useState(null);
     const [toast, setToast] = useState(null);
@@ -47,18 +43,29 @@ export default function AdminReviewsPage() {
 
             if (statusFilter !== 'all') params.append('status', statusFilter);
 
-            const res = await fetch(`/api/admin/reviews?${params}`);
+            const res = await fetch(`/api/admin/reviews?${params}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
             const data = await res.json();
 
             if (data.success) {
                 setReviews(data.reviews || []);
                 setPagination(data.pagination);
             } else {
+                console.error('API returned error:', data.error);
                 showToast('error', data.error || 'Failed to fetch reviews');
             }
         } catch (error) {
             console.error('Error fetching reviews:', error);
-            showToast('error', 'Failed to fetch reviews');
+            showToast('error', `Failed to fetch reviews: ${error.message}`);
         } finally {
             setLoading(false);
         }
