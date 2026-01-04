@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Review from '@/models/Review';
+import '@/models/Product'; // Import to ensure model is registered for populate()
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -27,7 +28,12 @@ export async function GET(request) {
     const skip = (page - 1) * limit;
     const [reviews, totalReviews] = await Promise.all([
       Review.find(query)
-        .populate('productId', 'name slug')
+        .populate({
+          path: 'productId',
+          select: 'name slug',
+          // Handle case where product doesn't exist
+          options: { strictPopulate: false }
+        })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -35,9 +41,20 @@ export async function GET(request) {
       Review.countDocuments(query)
     ]);
 
+    // Filter out reviews with null productId (deleted products)
+    // and format reviews with product info or placeholder
+    const formattedReviews = reviews.map(review => ({
+      ...review,
+      productId: review.productId || {
+        _id: null,
+        name: 'Product Deleted',
+        slug: null
+      }
+    }));
+
     const response = NextResponse.json({
       success: true,
-      reviews,
+      reviews: formattedReviews,
       pagination: {
         page,
         limit,
@@ -54,8 +71,14 @@ export async function GET(request) {
     return response;
   } catch (error) {
     console.error('Error fetching reviews:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch reviews', message: error.message },
+      {
+        success: false,
+        error: 'Failed to fetch reviews',
+        message: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
