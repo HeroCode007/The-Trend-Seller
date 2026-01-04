@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Check, Heart, Share2, ShieldCheck, Truck, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { premiumWatches, casualWatches, stylishWatches } from '@/lib/products';
 import AddToCartButton from '@/components/AddToCartButton';
+import ReviewSection from '@/components/ReviewSection';
 
 // Combine all watches for related items
 const allWatches = [...premiumWatches, ...casualWatches, ...stylishWatches];
@@ -379,6 +380,11 @@ export default function WatchDetailClient({ product }) {
                         </div>
                     </div>
                 </div>
+
+                {/* Reviews Section */}
+                <section className="mt-20">
+                    <ReviewSection productId={product.id || product._id} />
+                </section>
 
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (

@@ -10,7 +10,8 @@ import {
     Menu,
     X,
     LogOut,
-    Watch
+    Watch,
+    Star
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
@@ -52,6 +53,7 @@ export default function AdminLayout({ children }) {
         { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
         { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
         { name: 'Products', href: '/admin/products', icon: Package },
+        { name: 'Reviews', href: '/admin/reviews', icon: Star },
     ];
 
     const isActive = (href) => {
