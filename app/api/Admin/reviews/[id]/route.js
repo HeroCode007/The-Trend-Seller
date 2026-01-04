@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Review from '@/models/Review';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // PUT - Update review (approve/reject)
 export async function PUT(request, { params }) {
   try {
