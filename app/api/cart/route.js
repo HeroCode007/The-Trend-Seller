@@ -54,7 +54,7 @@ export async function POST(request) {
 
     // Check if item already exists in cart
     const existingItemIndex = cart.items.findIndex(
-      (item) => item.productId === productId
+      (item) => String(item.productId) === String(productId)
     );
 
     if (existingItemIndex >= 0) {
@@ -127,7 +127,7 @@ export async function PUT(request) {
       );
     }
 
-    const item = cart.items.find((item) => item.productId === productId);
+    const item = cart.items.find((item) => String(item.productId) === String(productId));
 
     if (!item) {
       return NextResponse.json(
@@ -163,7 +163,7 @@ export async function DELETE(request) {
     await connectDB();
     const sessionId = await getSessionId();
     const { searchParams } = new URL(request.url);
-    const productId = parseInt(searchParams.get('productId'));
+    const productId = searchParams.get('productId');
 
     if (!productId) {
       return NextResponse.json(
@@ -181,7 +181,7 @@ export async function DELETE(request) {
       );
     }
 
-    cart.items = cart.items.filter((item) => item.productId !== productId);
+    cart.items = cart.items.filter((item) => String(item.productId) !== String(productId));
     cart.updatedAt = new Date();
     await cart.save();
 

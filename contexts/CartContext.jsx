@@ -30,13 +30,16 @@ export function CartProvider({ children }) {
 
     const addToCart = async (product) => {
         try {
+            // Use _id for MongoDB products or id for static products
+            const productId = product._id || product.id;
+
             const response = await fetch('/api/cart', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    productId: product.id,
+                    productId: String(productId),
                     slug: product.slug,
                     name: product.name,
                     price: product.price,
@@ -65,7 +68,7 @@ export function CartProvider({ children }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ productId, quantity }),
+                body: JSON.stringify({ productId: String(productId), quantity }),
             });
 
             const data = await response.json();
@@ -83,7 +86,7 @@ export function CartProvider({ children }) {
 
     const removeFromCart = async (productId) => {
         try {
-            const response = await fetch(`/api/cart?productId=${productId}`, {
+            const response = await fetch(`/api/cart?productId=${String(productId)}`, {
                 method: 'DELETE',
             });
 
