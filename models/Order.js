@@ -13,7 +13,7 @@ const OrderSchema = new mongoose.Schema(
         },
         items: [
             {
-                productId: { type: Number, required: true },
+                productId: { type: String, required: true },
                 slug: { type: String },
                 name: { type: String, required: true },
                 price: { type: Number, required: true },
