@@ -63,6 +63,7 @@ const ProductSchema = new mongoose.Schema({
             'premium-watches',
             'casual-watches',
             'stylish-watches',
+            'women-watches',
             'belts',
             'wallets'
         ]

@@ -1,11 +1,11 @@
-import { premiumWatches, casualWatches, stylishWatches, getProductBySlug } from '@/lib/products';
+import { premiumWatches, casualWatches, stylishWatches, womensWatches, getProductBySlug } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import WatchDetailClient from './WatchDetail';
 import connectDB from '@/lib/db';
 import Product from '@/models/Product';
 
 // Combine all watches for static generation
-const allWatches = [...premiumWatches, ...casualWatches, ...stylishWatches];
+const allWatches = [...premiumWatches, ...casualWatches, ...stylishWatches, ...womensWatches];
 
 // Fetch product from database or fallback to static
 async function getProduct(slug) {

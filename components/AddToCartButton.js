@@ -5,7 +5,7 @@ import { ShoppingCart, Loader2, Check, XCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
-export default function AddToCartButton({ product, className = '' }) {
+export default function AddToCartButton({ product, quantity = 1, className = '' }) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const { addToCart } = useCart();
@@ -21,7 +21,7 @@ export default function AddToCartButton({ product, className = '' }) {
         setLoading(true);
         setSuccess(false);
 
-        const result = await addToCart(product);
+        const result = await addToCart(product, quantity);
 
         if (result.success) {
             setSuccess(true);

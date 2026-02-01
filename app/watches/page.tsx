@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { premiumWatches as staticPremiumWatches, casualWatches as staticCasualWatches, stylishWatches as staticStylishWatches } from '@/lib/products';
+import { premiumWatches as staticPremiumWatches, casualWatches as staticCasualWatches, stylishWatches as staticStylishWatches, womensWatches as staticWomensWatches } from '@/lib/products';
 
 // Define product type based on Product.js structure
 interface Product {
@@ -21,11 +21,11 @@ interface Product {
 }
 
 interface WatchWithCategory extends Product {
-  watchCategory: 'premium' | 'casual' | 'stylish';
+  watchCategory: 'premium' | 'casual' | 'stylish' | 'women';
 }
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-az' | 'name-za';
-type CategoryFilter = 'all' | 'premium' | 'casual' | 'stylish';
+type CategoryFilter = 'all' | 'premium' | 'casual' | 'stylish' | 'women';
 type PriceRange = 'all' | 'under-2000' | '2000-4000' | '4000-4500' | 'above-4500';
 type StockFilter = 'all' | 'in-stock' | 'out-of-stock';
 
@@ -42,16 +42,18 @@ export default function WatchesPage() {
   const [premiumWatches, setPremiumWatches] = useState<Product[]>(staticPremiumWatches);
   const [casualWatches, setCasualWatches] = useState<Product[]>(staticCasualWatches);
   const [stylishWatches, setStylishWatches] = useState<Product[]>(staticStylishWatches);
+  const [womensWatches, setWomensWatches] = useState<Product[]>(staticWomensWatches);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
   // Fetch products from database
   useEffect(() => {
     async function fetchAllProducts() {
       try {
-        const [premiumRes, casualRes, stylishRes] = await Promise.all([
+        const [premiumRes, casualRes, stylishRes, womensRes] = await Promise.all([
           fetch('/api/products?category=premium-watches', { cache: 'no-store' }),
           fetch('/api/products?category=casual-watches', { cache: 'no-store' }),
-          fetch('/api/products?category=stylish-watches', { cache: 'no-store' })
+          fetch('/api/products?category=stylish-watches', { cache: 'no-store' }),
+          fetch('/api/products?category=women-watches', { cache: 'no-store' })
         ]);
 
         if (premiumRes.ok) {
@@ -74,6 +76,13 @@ export default function WatchesPage() {
             setStylishWatches(data.products);
           }
         }
+
+        if (womensRes.ok) {
+          const data = await womensRes.json();
+          if (data.success && data.products.length > 0) {
+            setWomensWatches(data.products);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch products from database:', error);
         // Falls back to static data
@@ -89,7 +98,8 @@ export default function WatchesPage() {
     ...premiumWatches.map((w: Product) => ({ ...w, watchCategory: 'premium' as const })),
     ...casualWatches.map((w: Product) => ({ ...w, watchCategory: 'casual' as const })),
     ...stylishWatches.map((w: Product) => ({ ...w, watchCategory: 'stylish' as const })),
-  ], [premiumWatches, casualWatches, stylishWatches]);
+    ...womensWatches.map((w: Product) => ({ ...w, watchCategory: 'women' as const })),
+  ], [premiumWatches, casualWatches, stylishWatches, womensWatches]);
 
   // Filter and sort watches
   const filteredWatches = useMemo(() => {
@@ -229,6 +239,10 @@ export default function WatchesPage() {
                   <p className="text-3xl font-bold text-amber-400">{stylishWatches.length}</p>
                   <p className="text-sm text-neutral-500 uppercase tracking-wider">Stylish</p>
                 </div>
+                <div className="text-center md:text-left">
+                  <p className="text-3xl font-bold text-amber-400">{womensWatches.length}</p>
+                  <p className="text-sm text-neutral-500 uppercase tracking-wider">Women's</p>
+                </div>
               </div>
             </div>
 
@@ -283,7 +297,7 @@ export default function WatchesPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {/* Category Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
           {[
             {
               name: 'Premium',
@@ -311,6 +325,15 @@ export default function WatchesPage() {
               gradient: 'from-neutral-700 via-neutral-800 to-neutral-900',
               icon: '✨',
               priceRange: `Rs. ${Math.min(...stylishWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...stylishWatches.map(w => w.price)).toLocaleString()}`
+            },
+            {
+              name: "Women's",
+              slug: 'women',
+              count: womensWatches.length,
+              description: 'Elegant timepieces for women',
+              gradient: 'from-rose-600 via-rose-700 to-rose-800',
+              icon: '💎',
+              priceRange: womensWatches.length > 0 ? `Rs. ${Math.min(...womensWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...womensWatches.map(w => w.price)).toLocaleString()}` : 'No products yet'
             },
           ].map((category) => (
             <Link
@@ -464,6 +487,7 @@ export default function WatchesPage() {
                     { value: 'premium', label: `Premium (${premiumWatches.length})` },
                     { value: 'casual', label: `Casual (${casualWatches.length})` },
                     { value: 'stylish', label: `Stylish (${stylishWatches.length})` },
+                    { value: 'women', label: `Women's (${womensWatches.length})` },
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -536,7 +560,7 @@ export default function WatchesPage() {
         {filteredWatches.length > 0 ? (
           <div className={
             viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+              ? 'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6'
               : 'flex flex-col gap-4'
           }>
             {filteredWatches.map((watch, index) => (
@@ -727,7 +751,9 @@ function GridProductCard({ product }: { product: WatchWithCategory }) {
             ? 'bg-amber-50 text-amber-700'
             : product.watchCategory === 'casual'
               ? 'bg-stone-100 text-stone-600'
-              : 'bg-neutral-100 text-neutral-600'
+              : product.watchCategory === 'women'
+                ? 'bg-rose-50 text-rose-700'
+                : 'bg-neutral-100 text-neutral-600'
             }`}>
             {product.watchCategory.charAt(0).toUpperCase() + product.watchCategory.slice(1)}
           </span>
@@ -811,7 +837,9 @@ function ListProductCard({ product }: { product: WatchWithCategory }) {
                 ? 'bg-amber-50 text-amber-700'
                 : product.watchCategory === 'casual'
                   ? 'bg-stone-100 text-stone-600'
-                  : 'bg-neutral-100 text-neutral-600'
+                  : product.watchCategory === 'women'
+                    ? 'bg-rose-50 text-rose-700'
+                    : 'bg-neutral-100 text-neutral-600'
                 }`}>
                 {product.watchCategory.charAt(0).toUpperCase() + product.watchCategory.slice(1)}
               </span>

@@ -28,7 +28,7 @@ export function CartProvider({ children }) {
         }
     };
 
-    const addToCart = async (product) => {
+    const addToCart = async (product, quantity = 1) => {
         try {
             // Use _id for MongoDB products or id for static products
             const productId = product._id || product.id;
@@ -44,7 +44,7 @@ export function CartProvider({ children }) {
                     name: product.name,
                     price: product.price,
                     image: product.image,
-                    quantity: 1,
+                    quantity,
                 }),
             });
 

@@ -21,13 +21,15 @@ import {
     Crown,
     Sparkles,
     Wallet,
-    CircleDot
+    CircleDot,
+    Heart
 } from 'lucide-react';
 
 const categories = [
     { value: 'premium-watches', label: 'Premium Watches', icon: Crown },
     { value: 'casual-watches', label: 'Casual Watches', icon: Watch },
     { value: 'stylish-watches', label: 'Stylish Watches', icon: Sparkles },
+    { value: 'women-watches', label: "Women's Watches", icon: Heart },
     { value: 'belts', label: 'Belts', icon: CircleDot },
     { value: 'wallets', label: 'Wallets', icon: Wallet },
 ];
@@ -326,7 +328,7 @@ export default function NewProductPage() {
                                             <label className="block text-sm font-medium text-zinc-300 mb-2">
                                                 Category *
                                             </label>
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                                                 {categories.map(cat => (
                                                     <button
                                                         key={cat.value}

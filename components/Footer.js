@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Watch } from 'lucide-react';
+import { Watch, Instagram, Facebook } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -15,6 +15,24 @@ export default function Footer() {
               Premium watches, belts, and wallets crafted with precision and style.
               Quality accessories for the modern individual.
             </p>
+            <div className="flex items-center gap-4 mt-4">
+              <a
+                href="https://www.instagram.com/trend_seller_4/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-300 hover:text-white transition-colors"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.facebook.com/people/The-Trend-Seller/61582644554213/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-300 hover:text-white transition-colors"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+            </div>
           </div>
 
           <div>

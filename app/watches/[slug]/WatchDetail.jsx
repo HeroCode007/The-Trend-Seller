@@ -53,6 +53,8 @@ export default function WatchDetailClient({ product }) {
                 return { path: '/watches/casual', name: 'Casual Watches', shortName: 'Casual' };
             case 'stylish-watches':
                 return { path: '/watches/stylish', name: 'Stylish Watches', shortName: 'Stylish' };
+            case 'women-watches':
+                return { path: '/watches/women', name: "Women's Watches", shortName: "Women's" };
             default:
                 return { path: '/watches', name: 'Watches', shortName: 'Watches' };
         }
@@ -647,7 +649,7 @@ export default function WatchDetailClient({ product }) {
                     <div className="flex items-center gap-3">
                         <div className="flex-1">
                             <p className="text-xs text-stone-500">Total Price</p>
-                            <p className="text-xl font-bold text-stone-900">Rs. {product.price.toLocaleString()}</p>
+                            <p className="text-xl font-bold text-stone-900">Rs. {(product.price * quantity).toLocaleString()}</p>
                         </div>
                         <button
                             onClick={() => setIsWishlisted(!isWishlisted)}
@@ -656,9 +658,7 @@ export default function WatchDetailClient({ product }) {
                         >
                             <Heart className={`w-6 h-6 ${isWishlisted ? 'text-red-500 fill-red-500' : 'text-stone-400'}`} />
                         </button>
-                        <button className="flex-1 py-4 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-xl transition-colors">
-                            Add to Cart
-                        </button>
+                        <AddToCartButton product={product} quantity={quantity} className="flex-1" />
                     </div>
                 </div>
             )}

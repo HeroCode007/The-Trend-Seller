@@ -32,6 +32,7 @@ export default function PaymentVerificationPage({ params }) {
     const [copiedNumber, setCopiedNumber] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod);
     const [accountDetails, setAccountDetails] = useState(null);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     // Allowed file types
     const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -136,11 +137,8 @@ export default function PaymentVerificationPage({ params }) {
         }
     };
 
-    // Handle file selection with compression
-    const handleFileChange = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
+    // Core file processing shared by click-select and drag-drop
+    const processFile = async (file) => {
         // Validate file type
         if (!ALLOWED_TYPES.includes(file.type)) {
             toast({
@@ -148,7 +146,6 @@ export default function PaymentVerificationPage({ params }) {
                 description: 'Please upload JPEG, PNG, or WebP images only',
                 variant: 'destructive'
             });
-            e.target.value = '';
             return;
         }
 
@@ -159,7 +156,6 @@ export default function PaymentVerificationPage({ params }) {
                 description: 'Please upload an image smaller than 5MB',
                 variant: 'destructive'
             });
-            e.target.value = '';
             return;
         }
 
@@ -230,6 +226,22 @@ export default function PaymentVerificationPage({ params }) {
             const objectUrl = URL.createObjectURL(file);
             setPreviewUrl(objectUrl);
         }
+    };
+
+    // Handle click-to-select
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await processFile(file);
+    };
+
+    // Handle drag and drop
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+        await processFile(file);
     };
 
     // Handle removing screenshot
@@ -575,8 +587,13 @@ export default function PaymentVerificationPage({ params }) {
                                     />
                                     <label
                                         htmlFor="screenshot"
-                                        className={`flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-neutral-300 rounded-lg cursor-pointer hover:border-neutral-400 hover:bg-neutral-50 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
+                                        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                                        onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
+                                        onDrop={handleDrop}
+                                        className={`flex items-center justify-center w-full px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${isDragOver
+                                            ? 'border-neutral-500 bg-neutral-50'
+                                            : 'border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50'
+                                        } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <div className="text-center">
                                             <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />

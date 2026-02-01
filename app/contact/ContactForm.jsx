@@ -10,7 +10,7 @@ export default function ContactForm() {
         const message = e.target.message.value.trim();
 
         const whatsappMessage = `Hello! 👋%0AMy name is ${name}.%0AEmail: ${email}%0ASubject: ${subject}%0AMessage: ${message}`;
-        const phoneNumber = "923227032219"; // your WhatsApp number
+        const phoneNumber = "923234653567"; // your WhatsApp number
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         const whatsappURL = isMobile

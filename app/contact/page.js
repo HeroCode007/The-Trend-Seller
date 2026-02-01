@@ -53,21 +53,17 @@ export default function ContactPage() {
                   <h3 className="font-semibold text-neutral-900 mb-1">Phone</h3>
                   <ul className="text-neutral-600 space-y-1">
                     <li>
+                      <a href="tel:0323-4653567" className="hover:text-neutral-900">
+                        0323-4653567
+                      </a>
+                      <p className="text-sm text-neutral-500">For quick replies and all products inquiry</p>
+                    </li>
+                    <li>
                       <a href="tel:0315-6120078" className="hover:text-neutral-900">
                         0315-6120078
                       </a>
                     </li>
-                    <li>
-                      <a href="tel:0340-3928909" className="hover:text-neutral-900">
-                        0340-3928909
-                      </a>
-                    </li>
-                    <li>
-                      <a href="tel:0323-4653567" className="hover:text-neutral-900">
-                        0323-4653567
-                      </a>
-                    </li>
-                  </ul>
+                                      </ul>
                 </div>
               </div>
 
@@ -78,7 +74,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-neutral-900 mb-1">Address</h3>
                   <address className="text-neutral-600 not-italic">
-                    Sialkot
+                    Lahore
                     <br />
                     Pakistan
                   </address>
