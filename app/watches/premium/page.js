@@ -123,31 +123,31 @@ function PremiumProductCard({ product }) {
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(212,175,55,0.08)_0%,transparent_60%)]" />
 
                         {/* Corner decorations */}
-                        <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-amber-500/30" />
-                        <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-amber-500/30" />
-                        <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-amber-500/30" />
-                        <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-amber-500/30" />
+                        <div className="absolute top-2 xs:top-3 sm:top-4 left-2 xs:left-3 sm:left-4 w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 border-l-2 border-t-2 border-amber-500/30" />
+                        <div className="absolute top-2 xs:top-3 sm:top-4 right-2 xs:right-3 sm:right-4 w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 border-r-2 border-t-2 border-amber-500/30" />
+                        <div className="absolute bottom-2 xs:bottom-3 sm:bottom-4 left-2 xs:left-3 sm:left-4 w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 border-l-2 border-b-2 border-amber-500/30" />
+                        <div className="absolute bottom-2 xs:bottom-3 sm:bottom-4 right-2 xs:right-3 sm:right-4 w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 border-r-2 border-b-2 border-amber-500/30" />
 
                         {/* Badges */}
-                        <div className="absolute top-4 left-4 z-20 flex flex-col gap-2 ml-6">
+                        <div className="absolute top-2 xs:top-3 sm:top-4 left-2 xs:left-3 sm:left-4 z-20 flex flex-col gap-1 xs:gap-2 ml-4 xs:ml-5 sm:ml-6">
                             <motion.span
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-900 text-xs font-bold uppercase tracking-wider rounded-sm shadow-lg flex items-center gap-1.5"
+                                className="px-1.5 xs:px-2 sm:px-3 py-1 xs:py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-900 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-sm shadow-lg flex items-center gap-1"
                             >
-                                <Crown className="w-3 h-3" />
-                                Premium
+                                <Crown className="w-2.5 h-2.5 xs:w-3 xs:h-3" />
+                                <span className="hidden xs:inline">Premium</span>
                             </motion.span>
                             {isOutOfStock && (
-                                <span className="px-3 py-1.5 bg-red-600 text-white text-xs font-bold uppercase tracking-wider rounded-sm shadow-lg">
+                                <span className="px-1.5 xs:px-2 sm:px-3 py-1 xs:py-1.5 bg-red-600 text-white text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-sm shadow-lg">
                                     Sold Out
                                 </span>
                             )}
                         </div>
 
                         {/* Product Code */}
-                        <div className="absolute top-4 right-12 z-20 mr-2">
-                            <span className="px-2 py-1 bg-black/50 backdrop-blur-sm text-amber-400/80 text-[10px] font-mono tracking-wider rounded-sm border border-amber-500/20">
+                        <div className="absolute top-2 xs:top-3 sm:top-4 right-10 xs:right-11 sm:right-12 z-20 mr-1 xs:mr-2 hidden xs:block">
+                            <span className="px-1.5 xs:px-2 py-0.5 xs:py-1 bg-black/50 backdrop-blur-sm text-amber-400/80 text-[8px] xs:text-[10px] font-mono tracking-wider rounded-sm border border-amber-500/20">
                                 {product.productCode}
                             </span>
                         </div>
@@ -161,16 +161,16 @@ function PremiumProductCard({ product }) {
                                 e.stopPropagation();
                                 setIsWishlisted(!isWishlisted);
                             }}
-                            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-sm border border-amber-500/20 hover:border-amber-500/50 transition-colors"
+                            className="absolute top-2 xs:top-3 sm:top-4 right-2 xs:right-3 sm:right-4 z-20 w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-sm border border-amber-500/20 hover:border-amber-500/50 transition-colors"
                         >
                             <Heart
-                                className={`w-4 h-4 transition-colors ${isWishlisted ? 'text-amber-400 fill-amber-400' : 'text-neutral-400'
+                                className={`w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 transition-colors ${isWishlisted ? 'text-amber-400 fill-amber-400' : 'text-neutral-400'
                                     }`}
                             />
                         </motion.button>
 
                         {/* Product Image */}
-                        <div className="relative w-full h-full p-10">
+                        <div className="relative w-full h-full p-4 xs:p-6 sm:p-8 md:p-10">
                             <motion.div
                                 className="relative w-full h-full"
                                 animate={{
@@ -212,43 +212,43 @@ function PremiumProductCard({ product }) {
                     </div>
 
                     {/* Product Info */}
-                    <div className="p-5 border-t border-amber-500/10">
+                    <div className="p-3 xs:p-4 sm:p-5 border-t border-amber-500/10">
                         {/* Features Tags */}
-                        <div className="flex flex-wrap gap-1.5 mb-3">
+                        <div className="flex flex-wrap gap-1 xs:gap-1.5 mb-2 sm:mb-3">
                             {product.features?.slice(0, 2).map((feature, idx) => {
                                 const FeatureIcon = getFeatureIcon(feature);
                                 return (
                                     <span
                                         key={idx}
-                                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/10 text-amber-400/80 text-[10px] font-medium uppercase tracking-wider rounded-sm border border-amber-500/10"
+                                        className="inline-flex items-center gap-0.5 xs:gap-1 px-1 xs:px-1.5 sm:px-2 py-0.5 bg-amber-500/10 text-amber-400/80 text-[8px] xs:text-[9px] sm:text-[10px] font-medium uppercase tracking-wider rounded-sm border border-amber-500/10"
                                     >
-                                        <FeatureIcon className="w-3 h-3" />
-                                        {feature.length > 18 ? feature.substring(0, 18) + '...' : feature}
+                                        <FeatureIcon className="w-2 h-2 xs:w-2.5 xs:h-2.5 sm:w-3 sm:h-3" />
+                                        <span className="hidden xs:inline">{feature.length > 12 ? feature.substring(0, 12) + '...' : feature}</span>
                                     </span>
                                 );
                             })}
                         </div>
 
                         {/* Product Name */}
-                        <h3 className="font-semibold text-neutral-100 text-base mb-3 line-clamp-2 group-hover:text-amber-400 transition-colors duration-300 leading-snug min-h-[2.5rem]">
+                        <h3 className="font-semibold text-neutral-100 text-xs xs:text-sm sm:text-base mb-2 sm:mb-3 line-clamp-2 group-hover:text-amber-400 transition-colors duration-300 leading-snug min-h-[2rem] sm:min-h-[2.5rem]">
                             {product.name}
                         </h3>
 
                         {/* Price & Stock */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2">
                             <div>
-                                <span className="text-xs text-neutral-500 uppercase tracking-wider block mb-0.5">Price</span>
-                                <span className="text-2xl font-light text-amber-400 tracking-wide">
+                                <span className="text-[10px] text-neutral-500 uppercase tracking-wider block mb-0.5">Price</span>
+                                <span className="text-base xs:text-lg sm:text-xl md:text-2xl font-light text-amber-400 tracking-wide">
                                     Rs. {product.price.toLocaleString()}
                                 </span>
                             </div>
-                            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium uppercase tracking-wider ${isOutOfStock
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-sm text-[10px] font-medium uppercase tracking-wider w-fit ${isOutOfStock
                                 ? 'bg-red-500/10 text-red-400 border border-red-500/20'
                                 : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${isOutOfStock ? 'bg-red-400' : 'bg-emerald-400'
                                     }`} />
-                                {isOutOfStock ? 'Sold Out' : 'Available'}
+                                {isOutOfStock ? 'Sold Out' : 'In Stock'}
                             </div>
                         </div>
                     </div>
@@ -461,7 +461,7 @@ export default function PremiumWatchesPage() {
                                 <span className="text-sm font-medium text-amber-400/90 uppercase tracking-[0.2em]">Luxury Collection</span>
                             </motion.div>
 
-                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extralight text-white mb-6 tracking-tight leading-[1.1]">
+                            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight text-white mb-6 tracking-tight leading-[1.1]">
                                 Premium
                                 <span className="block font-normal text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500">
                                     Timepieces
@@ -474,27 +474,27 @@ export default function PremiumWatchesPage() {
                             </p>
 
                             {/* Elegant Stats */}
-                            <div className="flex flex-wrap justify-center lg:justify-start gap-12">
+                            <div className="flex flex-wrap justify-center lg:justify-start gap-4 xs:gap-6 sm:gap-12">
                                 <div className="text-center lg:text-left">
-                                    <p className="text-4xl font-extralight text-white tracking-wider">{priceStats.count}</p>
-                                    <p className="text-xs text-neutral-600 uppercase tracking-[0.25em] mt-1">Exclusive Pieces</p>
+                                    <p className="text-2xl xs:text-3xl sm:text-4xl font-extralight text-white tracking-wider">{priceStats.count}</p>
+                                    <p className="text-[10px] xs:text-xs text-neutral-600 uppercase tracking-[0.15em] sm:tracking-[0.25em] mt-1">Exclusive Pieces</p>
                                 </div>
                                 <div className="text-center lg:text-left relative">
-                                    <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-px h-8 bg-amber-500/20" />
-                                    <p className="text-4xl font-extralight text-amber-400 tracking-wider">Rs. {priceStats.min.toLocaleString()}</p>
-                                    <p className="text-xs text-neutral-600 uppercase tracking-[0.25em] mt-1">Starting From</p>
+                                    <div className="absolute -left-2 xs:-left-3 sm:-left-6 top-1/2 -translate-y-1/2 w-px h-6 sm:h-8 bg-amber-500/20 hidden xs:block" />
+                                    <p className="text-2xl xs:text-3xl sm:text-4xl font-extralight text-amber-400 tracking-wider">Rs. {priceStats.min.toLocaleString()}</p>
+                                    <p className="text-[10px] xs:text-xs text-neutral-600 uppercase tracking-[0.15em] sm:tracking-[0.25em] mt-1">Starting From</p>
                                 </div>
                                 <div className="text-center lg:text-left relative">
-                                    <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-px h-8 bg-amber-500/20" />
-                                    <p className="text-4xl font-extralight text-white tracking-wider">2 Yr</p>
-                                    <p className="text-xs text-neutral-600 uppercase tracking-[0.25em] mt-1">Warranty</p>
+                                    <div className="absolute -left-2 xs:-left-3 sm:-left-6 top-1/2 -translate-y-1/2 w-px h-6 sm:h-8 bg-amber-500/20 hidden xs:block" />
+                                    <p className="text-2xl xs:text-3xl sm:text-4xl font-extralight text-white tracking-wider">2 Yr</p>
+                                    <p className="text-[10px] xs:text-xs text-neutral-600 uppercase tracking-[0.15em] sm:tracking-[0.25em] mt-1">Warranty</p>
                                 </div>
                             </div>
                         </motion.div>
 
                         {/* Hero Visual - Elegant Watch Display */}
                         <motion.div
-                            className="relative w-80 h-80 md:w-[420px] md:h-[420px] flex-shrink-0"
+                            className="relative w-56 h-56 xs:w-72 xs:h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex-shrink-0"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -580,7 +580,7 @@ export default function PremiumWatchesPage() {
             <main className="max-w-7xl mx-auto px-4 py-12 md:py-16">
                 {/* Luxury Feature Highlights */}
                 <motion.div
-                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16"
+                    className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 mb-16"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
@@ -590,18 +590,18 @@ export default function PremiumWatchesPage() {
                         return (
                             <motion.div
                                 key={idx}
-                                className="relative p-5 bg-neutral-900/50 rounded-sm border border-amber-500/10 hover:border-amber-500/30 transition-all duration-500 text-center group overflow-hidden"
+                                className="relative p-3 xs:p-4 sm:p-5 bg-neutral-900/50 rounded-sm border border-amber-500/10 hover:border-amber-500/30 transition-all duration-500 text-center group overflow-hidden"
                                 whileHover={{ y: -3 }}
                             >
                                 {/* Hover glow */}
                                 <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 mx-auto mb-4 rounded-sm bg-amber-500/10 flex items-center justify-center border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
-                                        <IconComponent className="w-6 h-6 text-amber-400" />
+                                    <div className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 mx-auto mb-2 xs:mb-3 sm:mb-4 rounded-sm bg-amber-500/10 flex items-center justify-center border border-amber-500/20 group-hover:border-amber-500/40 transition-colors">
+                                        <IconComponent className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 text-amber-400" />
                                     </div>
-                                    <h3 className="font-medium text-neutral-200 text-sm uppercase tracking-wider">{feature.label}</h3>
-                                    <p className="text-xs text-neutral-500 mt-1">{feature.desc}</p>
+                                    <h3 className="font-medium text-neutral-200 text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider leading-tight">{feature.label}</h3>
+                                    <p className="text-[9px] xs:text-[10px] sm:text-xs text-neutral-500 mt-0.5 xs:mt-1">{feature.desc}</p>
                                 </div>
                             </motion.div>
                         );
@@ -610,25 +610,25 @@ export default function PremiumWatchesPage() {
 
                 {/* Filters Bar */}
                 <motion.div
-                    className="sticky top-0 z-40 bg-neutral-900/95 backdrop-blur-md border border-amber-500/10 rounded-sm mb-10 p-5"
+                    className="sticky top-0 z-40 bg-neutral-900/95 backdrop-blur-md border border-amber-500/10 rounded-sm mb-6 sm:mb-10 p-3 sm:p-5"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
                 >
-                    <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
                         {/* Left Side */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`flex items-center gap-2 px-5 py-2.5 border rounded-sm font-medium uppercase tracking-wider text-sm transition-all duration-300 ${showFilters
+                                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 border rounded-sm font-medium uppercase tracking-wider text-xs sm:text-sm transition-all duration-300 ${showFilters
                                     ? 'bg-amber-500 border-amber-500 text-neutral-900'
                                     : 'bg-transparent border-amber-500/30 hover:border-amber-500/60 text-neutral-300'
                                     }`}
                             >
-                                <SlidersHorizontal className="w-4 h-4" />
-                                <span>Filters</span>
+                                <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <span className="hidden xs:inline">Filters</span>
                                 {hasActiveFilters && (
-                                    <span className="w-5 h-5 flex items-center justify-center bg-neutral-900 text-amber-400 text-xs font-bold rounded-full">
+                                    <span className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-neutral-900 text-amber-400 text-[10px] sm:text-xs font-bold rounded-full">
                                         1
                                     </span>
                                 )}
@@ -637,17 +637,17 @@ export default function PremiumWatchesPage() {
                             {hasActiveFilters && (
                                 <button
                                     onClick={() => setPriceRange('all')}
-                                    className="text-sm text-neutral-500 hover:text-amber-400 transition-colors flex items-center gap-1 uppercase tracking-wider"
+                                    className="text-xs sm:text-sm text-neutral-500 hover:text-amber-400 transition-colors flex items-center gap-1 uppercase tracking-wider"
                                 >
                                     <X className="w-3 h-3" />
-                                    Clear
+                                    <span className="hidden xs:inline">Clear</span>
                                 </button>
                             )}
                         </div>
 
                         {/* Right Side */}
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-neutral-500 hidden sm:inline">
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            <span className="text-xs sm:text-sm text-neutral-500 hidden sm:inline">
                                 Showing <strong className="text-amber-400">{filteredWatches.length}</strong> timepieces
                             </span>
 
@@ -655,14 +655,14 @@ export default function PremiumWatchesPage() {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="appearance-none pl-4 pr-10 py-2.5 bg-neutral-800/50 border border-amber-500/20 rounded-sm text-sm text-neutral-300 focus:outline-none focus:border-amber-500/50 cursor-pointer uppercase tracking-wider"
+                                    className="appearance-none pl-2 sm:pl-4 pr-7 sm:pr-10 py-2 sm:py-2.5 bg-neutral-800/50 border border-amber-500/20 rounded-sm text-xs sm:text-sm text-neutral-300 focus:outline-none focus:border-amber-500/50 cursor-pointer uppercase tracking-wider"
                                 >
                                     <option value="featured">Featured</option>
-                                    <option value="price-low">Price: Low → High</option>
-                                    <option value="price-high">Price: High → Low</option>
-                                    <option value="name-az">Name: A → Z</option>
+                                    <option value="price-low">Price ↑</option>
+                                    <option value="price-high">Price ↓</option>
+                                    <option value="name-az">A → Z</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/50 pointer-events-none" />
+                                <ChevronDown className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-amber-500/50 pointer-events-none" />
                             </div>
                         </div>
                     </div>
@@ -706,7 +706,7 @@ export default function PremiumWatchesPage() {
                 {/* Products Grid */}
                 {filteredWatches.length > 0 ? (
                     <motion.div
-                        className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6"
+                        className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 xs:gap-3 lg:gap-6"
                         variants={containerVariants}
                         initial="hidden"
                         animate="visible"

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, Upload, AlertCircle, Copy, Check, X } from 'lucide-react';
+import { Loader2, CheckCircle, Upload, AlertCircle, Copy, Check, X, MessageCircle } from 'lucide-react';
 import { compressImage, formatFileSize } from '@/lib/imageCompression';
 
 export default function PaymentVerificationPage({ params }) {
@@ -313,19 +313,19 @@ export default function PaymentVerificationPage({ params }) {
 
             // Set success state to show success UI
             setUploadSuccess(true);
+            setUploading(false);
 
             toast({
                 title: '✨ Success!',
                 description: 'Payment screenshot uploaded successfully. Redirecting...'
             });
 
-            // Clear the screenshot after successful upload
-            handleRemoveScreenshot();
-
-            // Use window.location.replace for HARD redirect (no back button)
-            redirectTimeoutRef.current = setTimeout(() => {
-                window.location.replace(`/orders/${orderNumber}?uploaded=true&t=${Date.now()}`);
-            }, 1500);
+            // Redirect after a brief delay to show success UI
+            // Using a separate variable to avoid cleanup issues
+            const redirectUrl = `/orders/${orderNumber}?uploaded=true&t=${Date.now()}`;
+            setTimeout(() => {
+                window.location.replace(redirectUrl);
+            }, 1000);
 
         } catch (error) {
             console.error('Upload Error:', error);
@@ -373,6 +373,55 @@ export default function PaymentVerificationPage({ params }) {
     const calculateSubtotal = () => {
         if (!order) return 0;
         return (order.totalAmount || 0) - (order.deliveryCharges || 0);
+    };
+
+    // Format phone number for WhatsApp
+    const formatPhoneForWhatsApp = (phone) => {
+        if (!phone) return '';
+        let cleaned = phone.replace(/[-\s]/g, '');
+        if (cleaned.startsWith('0')) {
+            cleaned = '92' + cleaned.slice(1);
+        } else if (!cleaned.startsWith('92') && !cleaned.startsWith('+92')) {
+            cleaned = '92' + cleaned;
+        }
+        return cleaned.replace('+', '');
+    };
+
+    // Open WhatsApp with order confirmation
+    const sendWhatsAppConfirmation = () => {
+        if (!order) return;
+
+        const itemsList = order.items.map(item =>
+            `• ${item.name} (x${item.quantity}) - Rs. ${(item.price * item.quantity).toLocaleString('en-PK')}`
+        ).join('\n');
+
+        const message = `🎉 *Order Confirmation - The Trend Seller*
+
+Hello ${order.shippingAddress?.fullName}! 👋
+
+Thank you for your order! Here are your order details:
+
+📦 *Order Number:* ${orderNumber}
+
+🛍️ *Items:*
+${itemsList}
+
+💰 *Total Amount:* Rs. ${order.totalAmount?.toLocaleString('en-PK')}
+
+📍 *Delivery Address:*
+${order.shippingAddress?.address}, ${order.shippingAddress?.city}, ${order.shippingAddress?.postalCode}
+
+💳 *Payment Method:* ${order.paymentMethod === 'bank-transfer' ? 'Bank Transfer' : order.paymentMethod === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}
+
+Please complete your payment and upload the screenshot to confirm your order.
+
+Track your order: https://www.thetrendseller.com/orders/${orderNumber}
+
+Thank you for shopping with The Trend Seller! 🙏`;
+
+        const whatsappPhone = formatPhoneForWhatsApp(order.shippingAddress?.phone);
+        const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
     };
 
     // ✅ Show success screen while redirecting
@@ -453,6 +502,28 @@ export default function PaymentVerificationPage({ params }) {
                             <div className="flex justify-between text-lg font-bold text-neutral-900 pt-2 border-t">
                                 <span>Total Amount</span>
                                 <span>₨{totalAmount.toLocaleString('en-PK')}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* WhatsApp Order Confirmation */}
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <MessageCircle className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-semibold text-green-800 mb-1">Save Your Order Details</h3>
+                                <p className="text-sm text-green-700 mb-3">
+                                    Send yourself a WhatsApp message with your order details for easy reference.
+                                </p>
+                                <button
+                                    onClick={sendWhatsAppConfirmation}
+                                    className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                >
+                                    <MessageCircle className="h-5 w-5" />
+                                    Send Order Confirmation via WhatsApp
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, User, Phone, Mail, MapPin, Package, Truck, CheckCircle, Clock, Loader2, AlertCircle, Calendar, XCircle } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, MapPin, Package, Truck, CheckCircle, Clock, Loader2, AlertCircle, Calendar, XCircle, Bookmark } from 'lucide-react';
 
 export default function CustomerOrderDetailPage({ params }) {
     const { orderNumber } = params;
@@ -83,6 +83,20 @@ export default function CustomerOrderDetailPage({ params }) {
                     </div>
                 </div>
                 <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium capitalize border ${getStatusColor(order.status)}`}>{order.status}</span>
+            </div>
+
+            {/* Save Page Notice */}
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-4">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Bookmark className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                    <h3 className="font-semibold text-amber-800">Save This Page</h3>
+                    <p className="text-amber-700 text-sm mt-1">
+                        Please bookmark or save this page URL until your payment is verified and order is confirmed.
+                        You will need this link to track your order status.
+                    </p>
+                </div>
             </div>
 
             {message.text && (
