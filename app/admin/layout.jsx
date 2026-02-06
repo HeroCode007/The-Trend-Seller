@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -16,37 +16,18 @@ import {
 
 export default function AdminLayout({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const pathname = usePathname();
     const router = useRouter();
 
-    useEffect(() => {
-        const authStatus = sessionStorage.getItem('adminAuth');
-        if (authStatus === 'true') {
-            setIsAuthenticated(true);
-        }
-        setIsLoading(false);
-    }, []);
+    // Login page renders without the sidebar shell
+    if (pathname === '/admin/login') {
+        return <>{children}</>;
+    }
 
-    const handleLogin = (e) => {
-        e.preventDefault();
-        const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'SAIF123';
-        if (password === adminPassword) {
-            sessionStorage.setItem('adminAuth', 'true');
-            setIsAuthenticated(true);
-            setError('');
-        } else {
-            setError('Invalid password');
-        }
-    };
-
-    const handleLogout = () => {
-        sessionStorage.removeItem('adminAuth');
-        setIsAuthenticated(false);
-        router.push('/admin');
+    const handleLogout = async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        router.push('/admin/login');
+        router.refresh();
     };
 
     const navigation = [
@@ -60,67 +41,6 @@ export default function AdminLayout({ children }) {
         if (href === '/admin') return pathname === '/admin';
         return pathname.startsWith(href);
     };
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-        );
-    }
-
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center p-4">
-                <div className="w-full max-w-md">
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/10 rounded-2xl mb-4">
-                            <Watch className="w-8 h-8 text-amber-500" />
-                        </div>
-                        <h1 className="text-2xl font-bold text-white">The Trend Seller</h1>
-                        <p className="text-neutral-400 mt-1">Admin Panel</p>
-                    </div>
-
-                    <form onSubmit={handleLogin} className="bg-neutral-800/50 backdrop-blur-sm border border-neutral-700 rounded-2xl p-8">
-                        <h2 className="text-xl font-semibold text-white mb-6">Sign In</h2>
-
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                                {error}
-                            </div>
-                        )}
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-neutral-300 mb-2">
-                                    Admin Password
-                                </label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter admin password"
-                                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-600 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all"
-                                    required
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold rounded-xl hover:from-amber-400 hover:to-amber-500 transition-all duration-200 shadow-lg shadow-amber-500/20"
-                            >
-                                Sign In
-                            </button>
-                        </div>
-
-                        <p className="mt-6 text-center text-neutral-500 text-sm">
-                            Default password: admin123
-                        </p>
-                    </form>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-neutral-100">

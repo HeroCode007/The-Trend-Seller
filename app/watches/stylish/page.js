@@ -5,10 +5,10 @@ import ProductCard from '@/components/ProductCard';
 import { stylishWatches as staticStylishWatches } from '@/lib/products';
 
 export default function StylishWatchesPage() {
-    const [stylishWatches, setStylishWatches] = useState(staticStylishWatches);
+    const [stylishWatches, setStylishWatches] = useState([]);
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-    // Fetch products from database
+    // Fetch products from database with static fallback
     useEffect(() => {
         async function fetchProducts() {
             try {
@@ -17,13 +17,17 @@ export default function StylishWatchesPage() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success && data.products.length > 0) {
+                    if (data.success && data.products?.length > 0) {
                         setStylishWatches(data.products);
+                    } else {
+                        setStylishWatches(staticStylishWatches);
                     }
+                } else {
+                    setStylishWatches(staticStylishWatches);
                 }
             } catch (error) {
                 console.error('Failed to fetch products from database:', error);
-                // Falls back to staticStylishWatches
+                setStylishWatches(staticStylishWatches);
             } finally {
                 setIsLoadingProducts(false);
             }
@@ -46,16 +50,28 @@ export default function StylishWatchesPage() {
                     )}
                 </header>
 
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
-                    {stylishWatches.map((watch) => (
-                        <ProductCard
-                            key={watch.id || watch._id}
-                            product={watch}
-                            imageObject="contain"
-                            imagePaddingClass="p-6"
-                        />
-                    ))}
-                </div>
+                {isLoadingProducts ? (
+                    <div className="text-center py-20">
+                        <div className="w-12 h-12 mx-auto mb-4 border-4 border-neutral-200 border-t-amber-500 rounded-full animate-spin"></div>
+                        <p className="text-neutral-500">Loading stylish watches...</p>
+                    </div>
+                ) : stylishWatches.length > 0 ? (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
+                        {stylishWatches.map((watch) => (
+                            <ProductCard
+                                key={watch.id || watch._id}
+                                product={watch}
+                                imageObject="contain"
+                                imagePaddingClass="p-6"
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20">
+                        <p className="text-neutral-500 text-lg">No stylish watches available yet.</p>
+                        <p className="text-neutral-400 mt-2">Check back soon — new pieces are being added regularly.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -128,58 +128,92 @@ export default function AdminOrdersPage() {
                         <p className="text-neutral-500">No orders found</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-neutral-50 border-b border-neutral-200">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Order</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Customer</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Items</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Amount</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Payment</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Status</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Date</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-100">
-                                {filteredOrders.map((order) => (
-                                    <tr key={order.orderNumber} className="hover:bg-neutral-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <Link href={`/admin/orders/${order.orderNumber}`} className="font-semibold text-neutral-900 hover:text-amber-600">{order.orderNumber}</Link>
-                                            <p className="text-xs text-neutral-500 mt-0.5">{getPaymentMethodLabel(order.paymentMethod)}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="font-medium text-neutral-900">{order.shippingAddress?.fullName}</p>
-                                            <p className="text-sm text-neutral-500">{order.shippingAddress?.phone}</p>
-                                            <p className="text-xs text-neutral-400">{order.shippingAddress?.city}</p>
-                                        </td>
-                                        <td className="px-6 py-4"><span className="text-neutral-900">{order.items?.length || 0} items</span></td>
-                                        <td className="px-6 py-4"><span className="font-semibold text-neutral-900">{formatCurrency(order.totalAmount)}</span></td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(order.paymentStatus)}`}>
-                                                {order.paymentStatus?.replace('_', ' ')}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize border ${getStatusColor(order.status)}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-neutral-500">
-                                            {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                            <p className="text-xs text-neutral-400">{new Date(order.createdAt).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Link href={`/admin/orders/${order.orderNumber}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors">
-                                                <Eye className="w-4 h-4" /> View
-                                            </Link>
-                                        </td>
+                    <>
+                        {/* Mobile Cards */}
+                        <div className="lg:hidden divide-y divide-neutral-100">
+                            {filteredOrders.map((order) => (
+                                <Link key={order.orderNumber} href={`/admin/orders/${order.orderNumber}`} className="block p-4 hover:bg-neutral-50 transition-colors">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                            <span className="font-semibold text-neutral-900">{order.orderNumber}</span>
+                                            <span className="text-xs text-neutral-400 ml-2">{getPaymentMethodLabel(order.paymentMethod)}</span>
+                                        </div>
+                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize border ${getStatusColor(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div>
+                                            <p className="text-sm font-medium text-neutral-900">{order.shippingAddress?.fullName}</p>
+                                            <p className="text-xs text-neutral-500">{order.shippingAddress?.phone} · {order.shippingAddress?.city}</p>
+                                        </div>
+                                        <span className="font-semibold text-neutral-900">{formatCurrency(order.totalAmount)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-400">
+                                            {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })} · {order.items?.length || 0} items
+                                        </span>
+                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${getPaymentStatusColor(order.paymentStatus)}`}>
+                                            {order.paymentStatus?.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-neutral-50 border-b border-neutral-200">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Order</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Customer</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Items</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Amount</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Payment</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Status</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Date</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-500 uppercase">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100">
+                                    {filteredOrders.map((order) => (
+                                        <tr key={order.orderNumber} className="hover:bg-neutral-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <Link href={`/admin/orders/${order.orderNumber}`} className="font-semibold text-neutral-900 hover:text-amber-600">{order.orderNumber}</Link>
+                                                <p className="text-xs text-neutral-500 mt-0.5">{getPaymentMethodLabel(order.paymentMethod)}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="font-medium text-neutral-900">{order.shippingAddress?.fullName}</p>
+                                                <p className="text-sm text-neutral-500">{order.shippingAddress?.phone}</p>
+                                                <p className="text-xs text-neutral-400">{order.shippingAddress?.city}</p>
+                                            </td>
+                                            <td className="px-6 py-4"><span className="text-neutral-900">{order.items?.length || 0} items</span></td>
+                                            <td className="px-6 py-4"><span className="font-semibold text-neutral-900">{formatCurrency(order.totalAmount)}</span></td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(order.paymentStatus)}`}>
+                                                    {order.paymentStatus?.replace('_', ' ')}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize border ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-neutral-500">
+                                                {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                <p className="text-xs text-neutral-400">{new Date(order.createdAt).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Link href={`/admin/orders/${order.orderNumber}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors">
+                                                    <Eye className="w-4 h-4" /> View
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

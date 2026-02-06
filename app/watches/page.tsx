@@ -38,14 +38,14 @@ export default function WatchesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // State for dynamic data from database
-  const [premiumWatches, setPremiumWatches] = useState<Product[]>(staticPremiumWatches);
-  const [casualWatches, setCasualWatches] = useState<Product[]>(staticCasualWatches);
-  const [stylishWatches, setStylishWatches] = useState<Product[]>(staticStylishWatches);
-  const [womensWatches, setWomensWatches] = useState<Product[]>(staticWomensWatches);
+  // State for dynamic data from database - start empty to avoid stale data flash
+  const [premiumWatches, setPremiumWatches] = useState<Product[]>([]);
+  const [casualWatches, setCasualWatches] = useState<Product[]>([]);
+  const [stylishWatches, setStylishWatches] = useState<Product[]>([]);
+  const [womensWatches, setWomensWatches] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-  // Fetch products from database
+  // Fetch products from database with static fallback
   useEffect(() => {
     async function fetchAllProducts() {
       try {
@@ -58,34 +58,38 @@ export default function WatchesPage() {
 
         if (premiumRes.ok) {
           const data = await premiumRes.json();
-          if (data.success && data.products.length > 0) {
-            setPremiumWatches(data.products);
-          }
+          setPremiumWatches(data.success && data.products?.length > 0 ? data.products : staticPremiumWatches);
+        } else {
+          setPremiumWatches(staticPremiumWatches);
         }
 
         if (casualRes.ok) {
           const data = await casualRes.json();
-          if (data.success && data.products.length > 0) {
-            setCasualWatches(data.products);
-          }
+          setCasualWatches(data.success && data.products?.length > 0 ? data.products : staticCasualWatches);
+        } else {
+          setCasualWatches(staticCasualWatches);
         }
 
         if (stylishRes.ok) {
           const data = await stylishRes.json();
-          if (data.success && data.products.length > 0) {
-            setStylishWatches(data.products);
-          }
+          setStylishWatches(data.success && data.products?.length > 0 ? data.products : staticStylishWatches);
+        } else {
+          setStylishWatches(staticStylishWatches);
         }
 
         if (womensRes.ok) {
           const data = await womensRes.json();
-          if (data.success && data.products.length > 0) {
-            setWomensWatches(data.products);
-          }
+          setWomensWatches(data.success && data.products?.length > 0 ? data.products : staticWomensWatches);
+        } else {
+          setWomensWatches(staticWomensWatches);
         }
       } catch (error) {
         console.error('Failed to fetch products from database:', error);
-        // Falls back to static data
+        // Fallback to static data on error
+        setPremiumWatches(staticPremiumWatches);
+        setCasualWatches(staticCasualWatches);
+        setStylishWatches(staticStylishWatches);
+        setWomensWatches(staticWomensWatches);
       } finally {
         setIsLoadingProducts(false);
       }
@@ -221,26 +225,26 @@ export default function WatchesPage() {
                 </span>
               </h1>
               <p className="text-neutral-400 text-lg md:text-xl max-w-xl mb-8 leading-relaxed">
-                Discover our curated collection of {allWatches.length} exceptional watches.
+                Discover our curated collection of {isLoadingProducts ? '...' : allWatches.length} exceptional watches.
                 From luxury statements to everyday elegance.
               </p>
 
               {/* Quick Stats */}
               <div className="flex flex-wrap justify-center md:justify-start gap-8 md:gap-12">
                 <div className="text-center md:text-left">
-                  <p className="text-3xl font-bold text-amber-400">{premiumWatches.length}</p>
+                  <p className="text-3xl font-bold text-amber-400">{isLoadingProducts ? '...' : premiumWatches.length}</p>
                   <p className="text-sm text-neutral-500 uppercase tracking-wider">Premium</p>
                 </div>
                 <div className="text-center md:text-left">
-                  <p className="text-3xl font-bold text-amber-400">{casualWatches.length}</p>
+                  <p className="text-3xl font-bold text-amber-400">{isLoadingProducts ? '...' : casualWatches.length}</p>
                   <p className="text-sm text-neutral-500 uppercase tracking-wider">Casual</p>
                 </div>
                 <div className="text-center md:text-left">
-                  <p className="text-3xl font-bold text-amber-400">{stylishWatches.length}</p>
+                  <p className="text-3xl font-bold text-amber-400">{isLoadingProducts ? '...' : stylishWatches.length}</p>
                   <p className="text-sm text-neutral-500 uppercase tracking-wider">Stylish</p>
                 </div>
                 <div className="text-center md:text-left">
-                  <p className="text-3xl font-bold text-amber-400">{womensWatches.length}</p>
+                  <p className="text-3xl font-bold text-amber-400">{isLoadingProducts ? '...' : womensWatches.length}</p>
                   <p className="text-sm text-neutral-500 uppercase tracking-wider">Women's</p>
                 </div>
               </div>
@@ -306,7 +310,7 @@ export default function WatchesPage() {
               description: 'Luxury timepieces for the distinguished',
               gradient: 'from-amber-600 via-amber-700 to-amber-800',
               icon: '👑',
-              priceRange: `Rs. ${Math.min(...premiumWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...premiumWatches.map(w => w.price)).toLocaleString()}`
+              priceRange: premiumWatches.length > 0 ? `Rs. ${Math.min(...premiumWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...premiumWatches.map(w => w.price)).toLocaleString()}` : '...'
             },
             {
               name: 'Casual',
@@ -315,7 +319,7 @@ export default function WatchesPage() {
               description: 'Everyday elegance and comfort',
               gradient: 'from-stone-600 via-stone-700 to-stone-800',
               icon: '⌚',
-              priceRange: `Rs. ${Math.min(...casualWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...casualWatches.map(w => w.price)).toLocaleString()}`
+              priceRange: casualWatches.length > 0 ? `Rs. ${Math.min(...casualWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...casualWatches.map(w => w.price)).toLocaleString()}` : '...'
             },
             {
               name: 'Stylish',
@@ -324,7 +328,7 @@ export default function WatchesPage() {
               description: 'Fashion-forward statement pieces',
               gradient: 'from-neutral-700 via-neutral-800 to-neutral-900',
               icon: '✨',
-              priceRange: `Rs. ${Math.min(...stylishWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...stylishWatches.map(w => w.price)).toLocaleString()}`
+              priceRange: stylishWatches.length > 0 ? `Rs. ${Math.min(...stylishWatches.map(w => w.price)).toLocaleString()} - ${Math.max(...stylishWatches.map(w => w.price)).toLocaleString()}` : '...'
             },
             {
               name: "Women's",
@@ -353,8 +357,8 @@ export default function WatchesPage() {
                 <p className="text-white/70 text-sm mb-4">{category.description}</p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-semibold">{category.count} pieces</span>
-                    <span className="block text-xs text-white/50 mt-0.5">{category.priceRange}</span>
+                    <span className="text-sm font-semibold">{isLoadingProducts ? '...' : category.count} pieces</span>
+                    <span className="block text-xs text-white/50 mt-0.5">{isLoadingProducts ? 'Loading...' : category.priceRange}</span>
                   </div>
                   <span className="text-white/70 group-hover:translate-x-2 transition-transform duration-300 text-xl">→</span>
                 </div>
@@ -557,7 +561,12 @@ export default function WatchesPage() {
 
 
         {/* Products Grid */}
-        {filteredWatches.length > 0 ? (
+        {isLoadingProducts ? (
+          <div className="text-center py-20">
+            <div className="w-12 h-12 mx-auto mb-4 border-4 border-neutral-200 border-t-amber-500 rounded-full animate-spin"></div>
+            <p className="text-neutral-500">Loading watches...</p>
+          </div>
+        ) : filteredWatches.length > 0 ? (
           <div className={
             viewMode === 'grid'
               ? 'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6'

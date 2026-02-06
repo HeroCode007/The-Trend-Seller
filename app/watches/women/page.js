@@ -5,10 +5,10 @@ import ProductCard from '@/components/ProductCard';
 import { womensWatches as staticWomensWatches } from '@/lib/products';
 
 export default function WomensWatchesPage() {
-    const [womensWatches, setWomensWatches] = useState(staticWomensWatches);
+    const [womensWatches, setWomensWatches] = useState([]);
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-    // Fetch products from database
+    // Fetch products from database with static fallback
     useEffect(() => {
         async function fetchProducts() {
             try {
@@ -17,13 +17,17 @@ export default function WomensWatchesPage() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success && data.products.length > 0) {
+                    if (data.success && data.products?.length > 0) {
                         setWomensWatches(data.products);
+                    } else {
+                        setWomensWatches(staticWomensWatches);
                     }
+                } else {
+                    setWomensWatches(staticWomensWatches);
                 }
             } catch (error) {
                 console.error('Failed to fetch products from database:', error);
-                // Falls back to staticWomensWatches
+                setWomensWatches(staticWomensWatches);
             } finally {
                 setIsLoadingProducts(false);
             }

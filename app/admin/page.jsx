@@ -187,49 +187,75 @@ export default function AdminDashboard() {
                         <p className="text-neutral-500">No orders yet</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-neutral-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Order</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Customer</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Amount</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Payment</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-200">
-                                {recentOrders.map((order) => (
-                                    <tr key={order.orderNumber} className="hover:bg-neutral-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <Link href={`/admin/orders/${order.orderNumber}`} className="font-medium text-neutral-900 hover:text-amber-600">
-                                                {order.orderNumber}
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-neutral-900">{order.shippingAddress?.fullName}</p>
-                                            <p className="text-sm text-neutral-500">{order.shippingAddress?.phone}</p>
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-neutral-900">{formatCurrency(order.totalAmount)}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
-                                                {order.paymentStatus?.replace('_', ' ')}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-neutral-500">
-                                            {new Date(order.createdAt).toLocaleDateString('en-PK')}
-                                        </td>
+                    <>
+                        {/* Mobile Cards */}
+                        <div className="md:hidden divide-y divide-neutral-200">
+                            {recentOrders.map((order) => (
+                                <Link key={order.orderNumber} href={`/admin/orders/${order.orderNumber}`} className="block p-4 hover:bg-neutral-50 transition-colors">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="font-semibold text-neutral-900">{order.orderNumber}</span>
+                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm text-neutral-600">{order.shippingAddress?.fullName}</span>
+                                        <span className="font-medium text-neutral-900">{formatCurrency(order.totalAmount)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-500">{new Date(order.createdAt).toLocaleDateString('en-PK')}</span>
+                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
+                                            {order.paymentStatus?.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-neutral-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Order</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Customer</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Amount</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase">Date</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-200">
+                                    {recentOrders.map((order) => (
+                                        <tr key={order.orderNumber} className="hover:bg-neutral-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <Link href={`/admin/orders/${order.orderNumber}`} className="font-medium text-neutral-900 hover:text-amber-600">
+                                                    {order.orderNumber}
+                                                </Link>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-neutral-900">{order.shippingAddress?.fullName}</p>
+                                                <p className="text-sm text-neutral-500">{order.shippingAddress?.phone}</p>
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-neutral-900">{formatCurrency(order.totalAmount)}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
+                                                    {order.paymentStatus?.replace('_', ' ')}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-neutral-500">
+                                                {new Date(order.createdAt).toLocaleDateString('en-PK')}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

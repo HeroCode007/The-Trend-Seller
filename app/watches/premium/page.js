@@ -22,8 +22,7 @@ import {
     BadgeCheck,
     Fingerprint,
     Timer,
-    Settings2,
-    Loader2
+    Settings2
 } from 'lucide-react';
 import { premiumWatches as staticPremiumWatches } from '@/lib/products';
 
@@ -309,9 +308,8 @@ export default function PremiumWatchesPage() {
     const [showFilters, setShowFilters] = useState(false);
     const [priceRange, setPriceRange] = useState('all');
     const [premiumWatches, setPremiumWatches] = useState(staticPremiumWatches);
-    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-    // Fetch products from database
+    // Fetch products from database - only update if API returns products
     useEffect(() => {
         async function fetchProducts() {
             try {
@@ -320,15 +318,12 @@ export default function PremiumWatchesPage() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success && data.products.length > 0) {
+                    if (data.success && data.products?.length > 0) {
                         setPremiumWatches(data.products);
                     }
                 }
             } catch (error) {
                 console.error('Failed to fetch products from database:', error);
-                // Falls back to staticPremiumWatches
-            } finally {
-                setIsLoadingProducts(false);
             }
         }
         fetchProducts();
@@ -713,7 +708,7 @@ export default function PremiumWatchesPage() {
                     >
                         {filteredWatches.map((watch) => (
                             <PremiumProductCard
-                                key={watch.id}
+                                key={watch.id || watch._id}
                                 product={watch}
                             />
                         ))}

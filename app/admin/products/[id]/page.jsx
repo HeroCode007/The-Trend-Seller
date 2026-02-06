@@ -330,31 +330,31 @@ export default function EditProductPage() {
 
       {/* Header */}
       <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <Link
                 href="/admin/products"
-                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <div>
-                <h1 className="text-xl font-bold">Edit Product</h1>
-                <p className="text-sm text-zinc-400">{formData.name}</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold">Edit Product</h1>
+                <p className="text-xs sm:text-sm text-zinc-400 truncate">{formData.name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-500 rounded-lg transition-colors flex items-center gap-2"
+                className="p-2 sm:px-4 sm:py-2 bg-red-600/20 hover:bg-red-600/30 text-red-500 rounded-lg transition-colors flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Delete</span>
               </button>
               <button
                 onClick={() => setShowPreview(!showPreview)}
-                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors flex items-center gap-2"
+                className="p-2 sm:px-4 sm:py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors flex items-center gap-2"
               >
                 {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Preview'}</span>
@@ -362,10 +362,11 @@ export default function EditProductPage() {
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Saving...' : 'Save Changes'}
+                <span className="hidden sm:inline">{saving ? 'Saving...' : 'Save Changes'}</span>
+                <span className="sm:hidden">{saving ? '...' : 'Save'}</span>
               </button>
             </div>
           </div>
@@ -455,7 +456,7 @@ export default function EditProductPage() {
                       <label className="block text-sm font-medium text-zinc-300 mb-2">
                         Category *
                       </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {categories.map(cat => (
                           <button
                             key={cat.value}

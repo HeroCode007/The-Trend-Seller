@@ -261,10 +261,10 @@ export default function AdminReviewsPage() {
                     </div>
 
                     {/* Status Filter */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1">
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className={`px-4 py-2.5 rounded-xl font-medium transition-all ${statusFilter === 'all'
+                            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium transition-all text-sm whitespace-nowrap ${statusFilter === 'all'
                                     ? 'bg-neutral-900 text-white'
                                     : 'bg-neutral-50 border border-neutral-200 text-neutral-700 hover:bg-neutral-100'
                                 }`}
@@ -273,7 +273,7 @@ export default function AdminReviewsPage() {
                         </button>
                         <button
                             onClick={() => setStatusFilter('pending')}
-                            className={`px-4 py-2.5 rounded-xl font-medium transition-all ${statusFilter === 'pending'
+                            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium transition-all text-sm whitespace-nowrap ${statusFilter === 'pending'
                                     ? 'bg-amber-500 text-white'
                                     : 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'
                                 }`}
@@ -282,7 +282,7 @@ export default function AdminReviewsPage() {
                         </button>
                         <button
                             onClick={() => setStatusFilter('approved')}
-                            className={`px-4 py-2.5 rounded-xl font-medium transition-all ${statusFilter === 'approved'
+                            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium transition-all text-sm whitespace-nowrap ${statusFilter === 'approved'
                                     ? 'bg-green-500 text-white'
                                     : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'
                                 }`}
@@ -306,28 +306,28 @@ export default function AdminReviewsPage() {
                 ) : (
                     <div className="divide-y divide-neutral-100">
                         {filteredReviews.map((review) => (
-                            <div key={review._id} className="p-6 hover:bg-neutral-50 transition-colors">
+                            <div key={review._id} className="p-4 sm:p-6 hover:bg-neutral-50 transition-colors">
                                 {/* Review Header */}
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                                                <span className="text-amber-700 font-semibold text-sm">
+                                <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-amber-700 font-semibold text-xs sm:text-sm">
                                                     {review.name?.charAt(0).toUpperCase()}
                                                 </span>
                                             </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className="font-semibold text-neutral-900">{review.name}</h4>
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <h4 className="font-semibold text-neutral-900 text-sm sm:text-base">{review.name}</h4>
                                                     {review.verified && (
-                                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                                        <span className="text-[10px] sm:text-xs bg-green-100 text-green-700 px-1.5 sm:px-2 py-0.5 rounded-full">
                                                             Verified
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex items-center gap-2 mt-0.5 sm:mt-1">
                                                     <StarRating rating={review.rating} />
-                                                    <span className="text-xs text-neutral-500">
+                                                    <span className="text-[10px] sm:text-xs text-neutral-500 hidden sm:inline">
                                                         {formatDate(review.createdAt)}
                                                     </span>
                                                 </div>
@@ -336,13 +336,12 @@ export default function AdminReviewsPage() {
 
                                         {/* Product Info */}
                                         {review.productId && (
-                                            <div className="flex items-center gap-2 text-sm text-neutral-600 mb-3">
-                                                <Eye className="w-4 h-4" />
-                                                <span>Product: </span>
+                                            <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-3">
+                                                <Eye className="w-3.5 h-3.5 flex-shrink-0" />
                                                 <Link
                                                     href={`/watches/${review.productId.slug}`}
                                                     target="_blank"
-                                                    className="text-amber-600 hover:text-amber-700 font-medium"
+                                                    className="text-amber-600 hover:text-amber-700 font-medium truncate"
                                                 >
                                                     {review.productId.name}
                                                 </Link>
@@ -350,40 +349,43 @@ export default function AdminReviewsPage() {
                                         )}
 
                                         {/* Review Content */}
-                                        <h5 className="font-semibold text-neutral-900 mb-2">{review.title}</h5>
-                                        <p className="text-neutral-600 leading-relaxed mb-3">{review.comment}</p>
+                                        <h5 className="font-semibold text-neutral-900 mb-1 sm:mb-2 text-sm sm:text-base">{review.title}</h5>
+                                        <p className="text-neutral-600 leading-relaxed mb-2 sm:mb-3 text-sm">{review.comment}</p>
 
-                                        {/* Helpful Count */}
-                                        <div className="flex items-center gap-2 text-sm text-neutral-500">
-                                            <ThumbsUp className="w-4 h-4" />
-                                            <span>{review.helpful || 0} people found this helpful</span>
+                                        {/* Date on mobile + Helpful Count */}
+                                        <div className="flex items-center gap-3 text-xs sm:text-sm text-neutral-500">
+                                            <span className="sm:hidden text-neutral-400">{new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                            <div className="flex items-center gap-1">
+                                                <ThumbsUp className="w-3.5 h-3.5" />
+                                                <span>{review.helpful || 0} helpful</span>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Status Badge */}
-                                    <div className="ml-4">
+                                    <div className="flex-shrink-0">
                                         {review.isApproved ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                                                <Check className="w-4 h-4" />
-                                                Approved
+                                            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-medium">
+                                                <Check className="w-3.5 h-3.5" />
+                                                <span className="hidden sm:inline">Approved</span>
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-                                                <AlertTriangle className="w-4 h-4" />
-                                                Pending
+                                            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-100 text-amber-700 rounded-full text-xs sm:text-sm font-medium">
+                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                <span className="hidden sm:inline">Pending</span>
                                             </span>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-2 pt-4 border-t border-neutral-100">
+                                <div className="flex items-center gap-2 pt-3 sm:pt-4 border-t border-neutral-100 flex-wrap">
                                     {!review.isApproved ? (
                                         <>
                                             <button
                                                 onClick={() => handleApprove(review)}
                                                 disabled={actionLoading === review._id}
-                                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50"
+                                                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium disabled:opacity-50"
                                             >
                                                 {actionLoading === review._id ? (
                                                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -395,7 +397,7 @@ export default function AdminReviewsPage() {
                                             <button
                                                 onClick={() => handleReject(review)}
                                                 disabled={actionLoading === review._id}
-                                                className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 transition-colors font-medium disabled:opacity-50"
+                                                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 transition-colors text-sm font-medium disabled:opacity-50"
                                             >
                                                 <X className="w-4 h-4" />
                                                 Reject
@@ -405,7 +407,7 @@ export default function AdminReviewsPage() {
                                         <button
                                             onClick={() => handleReject(review)}
                                             disabled={actionLoading === review._id}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors font-medium disabled:opacity-50"
+                                            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors text-sm font-medium disabled:opacity-50"
                                         >
                                             {actionLoading === review._id ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -418,10 +420,10 @@ export default function AdminReviewsPage() {
                                     <button
                                         onClick={() => setDeleteModal({ open: true, review })}
                                         disabled={actionLoading === review._id}
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium disabled:opacity-50"
+                                        className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium disabled:opacity-50"
                                     >
                                         <Trash2 className="w-4 h-4" />
-                                        Delete
+                                        <span className="hidden sm:inline">Delete</span>
                                     </button>
                                 </div>
                             </div>

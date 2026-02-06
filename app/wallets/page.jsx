@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -18,7 +18,7 @@ import {
   Layers,
   Sparkles
 } from 'lucide-react';
-import { wallets } from '@/lib/products';
+import { wallets as staticWallets } from '@/lib/products';
 
 // Animation variants
 const containerVariants = {
@@ -193,6 +193,35 @@ export default function WalletsPage() {
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState('all');
+  const [wallets, setWallets] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+  // Fetch products from database with static fallback
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products?category=wallets', {
+          cache: 'no-store'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.products?.length > 0) {
+            setWallets(data.products);
+          } else {
+            setWallets(staticWallets);
+          }
+        } else {
+          setWallets(staticWallets);
+        }
+      } catch (error) {
+        console.error('Failed to fetch products from database:', error);
+        setWallets(staticWallets);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    }
+    fetchProducts();
+  }, []);
 
   // Filter and sort wallets
   const filteredWallets = useMemo(() => {
@@ -225,12 +254,15 @@ export default function WalletsPage() {
     }
 
     return items;
-  }, [sortBy, priceRange]);
+  }, [wallets, sortBy, priceRange]);
 
   const hasActiveFilters = priceRange !== 'all';
 
   // Calculate stats
   const stats = useMemo(() => {
+    if (wallets.length === 0) {
+      return { min: 0, max: 0, count: 0, rfidCount: 0 };
+    }
     const prices = wallets.map(w => w.price);
     const rfidCount = wallets.filter(w =>
       w.features?.some(f => f.toLowerCase().includes('rfid'))
@@ -241,7 +273,7 @@ export default function WalletsPage() {
       count: wallets.length,
       rfidCount
     };
-  }, []);
+  }, [wallets]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50/50 via-white to-orange-50/30">

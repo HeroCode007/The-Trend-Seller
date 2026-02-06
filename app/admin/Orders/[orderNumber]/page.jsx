@@ -104,10 +104,11 @@ export default function AdminOrderDetailPage({ params }) {
                 <div className="flex items-center gap-4">
                     <Link href="/admin/orders" className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"><ArrowLeft className="w-5 h-5 text-neutral-600" /></Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-neutral-900">Order {order.orderNumber}</h1>
-                        <p className="text-neutral-500 flex items-center gap-2 mt-1">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(order.createdAt).toLocaleString('en-PK', { dateStyle: 'full', timeStyle: 'short' })}
+                        <h1 className="text-xl sm:text-2xl font-bold text-neutral-900">Order {order.orderNumber}</h1>
+                        <p className="text-neutral-500 flex items-center gap-2 mt-1 text-sm">
+                            <Calendar className="w-4 h-4 flex-shrink-0" />
+                            <span className="hidden sm:inline">{new Date(order.createdAt).toLocaleString('en-PK', { dateStyle: 'full', timeStyle: 'short' })}</span>
+                            <span className="sm:hidden">{new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </p>
                     </div>
                 </div>
@@ -119,10 +120,10 @@ export default function AdminOrderDetailPage({ params }) {
             )}
 
             {order.status !== 'cancelled' && (
-                <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-                    <h2 className="text-lg font-semibold text-neutral-900 mb-6">Order Progress</h2>
+                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-6">
+                    <h2 className="text-lg font-semibold text-neutral-900 mb-4 sm:mb-6">Order Progress</h2>
                     <div className="flex items-center justify-between relative">
-                        <div className="absolute top-5 left-0 right-0 h-0.5 bg-neutral-200">
+                        <div className="absolute top-4 sm:top-5 left-0 right-0 h-0.5 bg-neutral-200">
                             <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` }} />
                         </div>
                         {statusSteps.map((step, index) => {
@@ -130,10 +131,10 @@ export default function AdminOrderDetailPage({ params }) {
                             const isCurrent = index === currentStepIndex;
                             return (
                                 <div key={step.key} className="flex flex-col items-center relative z-10">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isCompleted ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-400'} ${isCurrent ? 'ring-4 ring-green-100' : ''}`}>
-                                        <step.icon className="w-5 h-5" />
+                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isCompleted ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-400'} ${isCurrent ? 'ring-4 ring-green-100' : ''}`}>
+                                        <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <p className={`mt-2 text-sm font-medium ${isCompleted ? 'text-green-600' : 'text-neutral-400'}`}>{step.label}</p>
+                                    <p className={`mt-1.5 sm:mt-2 text-[10px] sm:text-sm font-medium ${isCompleted ? 'text-green-600' : 'text-neutral-400'}`}>{step.label}</p>
                                 </div>
                             );
                         })}
@@ -157,15 +158,15 @@ export default function AdminOrderDetailPage({ params }) {
                         <div className="p-6 border-b border-neutral-200"><h2 className="text-lg font-semibold text-neutral-900">Order Items</h2></div>
                         <div className="divide-y divide-neutral-100">
                             {order.items?.map((item, index) => (
-                                <div key={index} className="p-6 flex gap-4">
-                                    <div className="w-20 h-20 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0">
-                                        {item.image ? <Image src={item.image} alt={item.name} width={80} height={80} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Package className="w-8 h-8 text-neutral-300" /></div>}
+                                <div key={index} className="p-3 sm:p-6 flex gap-3 sm:gap-4">
+                                    <div className="w-14 h-14 sm:w-20 sm:h-20 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0">
+                                        {item.image ? <Image src={item.image} alt={item.name} width={80} height={80} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 sm:w-8 sm:h-8 text-neutral-300" /></div>}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium text-neutral-900">{item.name}</h3>
-                                        <p className="text-sm text-neutral-500 mt-1">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
+                                        <h3 className="font-medium text-neutral-900 text-sm sm:text-base line-clamp-2">{item.name}</h3>
+                                        <p className="text-xs sm:text-sm text-neutral-500 mt-1">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
                                     </div>
-                                    <div className="text-right"><p className="font-semibold text-neutral-900">{formatCurrency(item.price * item.quantity)}</p></div>
+                                    <div className="text-right flex-shrink-0"><p className="font-semibold text-neutral-900 text-sm sm:text-base">{formatCurrency(item.price * item.quantity)}</p></div>
                                 </div>
                             ))}
                         </div>

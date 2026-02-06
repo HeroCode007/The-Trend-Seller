@@ -347,10 +347,10 @@ export default function CasualWatchesPage() {
     const [sortBy, setSortBy] = useState('featured');
     const [showFilters, setShowFilters] = useState(false);
     const [priceRange, setPriceRange] = useState('all');
-    const [casualWatches, setCasualWatches] = useState(staticCasualWatches);
+    const [casualWatches, setCasualWatches] = useState([]);
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-    // Fetch products from database
+    // Fetch products from database with static fallback
     useEffect(() => {
         async function fetchProducts() {
             try {
@@ -359,13 +359,17 @@ export default function CasualWatchesPage() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success && data.products.length > 0) {
+                    if (data.success && data.products?.length > 0) {
                         setCasualWatches(data.products);
+                    } else {
+                        setCasualWatches(staticCasualWatches);
                     }
+                } else {
+                    setCasualWatches(staticCasualWatches);
                 }
             } catch (error) {
                 console.error('Failed to fetch products from database:', error);
-                // Falls back to staticCasualWatches
+                setCasualWatches(staticCasualWatches);
             } finally {
                 setIsLoadingProducts(false);
             }

@@ -435,7 +435,7 @@ export default function AdminProductsPage() {
                 </div>
             )}
 
-            {/* Products Table */}
+            {/* Products Table / Cards */}
             <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
                 {products.length === 0 ? (
                     <div className="p-12 text-center">
@@ -465,7 +465,125 @@ export default function AdminProductsPage() {
                     </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto">
+                        {/* Mobile Cards */}
+                        <div className="lg:hidden divide-y divide-neutral-100">
+                            {products.map((product) => (
+                                <div
+                                    key={product._id}
+                                    className={`p-4 ${selectedProducts.includes(product._id) ? 'bg-amber-50/50' : ''}`}
+                                >
+                                    <div className="flex gap-3">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedProducts.includes(product._id)}
+                                                onChange={() => toggleSelectProduct(product._id)}
+                                                className="w-4 h-4 rounded border-neutral-300 text-amber-500 focus:ring-amber-500"
+                                            />
+                                            <div className="relative w-16 h-16 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0">
+                                                {product.image ? (
+                                                    <Image
+                                                        src={product.image}
+                                                        alt={product.name}
+                                                        fill
+                                                        className="object-contain p-1"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <Package className="w-6 h-6 text-neutral-300" />
+                                                    </div>
+                                                )}
+                                                {product.isFeatured && (
+                                                    <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                                                        <Star className="w-2.5 h-2.5 text-white fill-white" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <Link
+                                                href={`/admin/products/${product._id}`}
+                                                className="font-medium text-neutral-900 hover:text-amber-600 transition-colors line-clamp-2 text-sm"
+                                            >
+                                                {product.name}
+                                            </Link>
+                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${getCategoryColor(product.category)}`}>
+                                                    {getCategoryLabel(product.category)}
+                                                </span>
+                                                <button
+                                                    onClick={() => copyProductCode(product.productCode)}
+                                                    className="text-[10px] font-mono text-neutral-500 hover:text-amber-600 flex items-center gap-1"
+                                                >
+                                                    {product.productCode}
+                                                    <Copy className="w-2.5 h-2.5" />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <div>
+                                                    <span className="font-semibold text-neutral-900 text-sm">
+                                                        {formatCurrency(product.price)}
+                                                    </span>
+                                                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                                                        <span className="text-[10px] text-neutral-400 line-through ml-1">
+                                                            {formatCurrency(product.compareAtPrice)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                <button
+                                                    onClick={() => toggleStatus(product, 'inStock')}
+                                                    disabled={actionLoading === product._id}
+                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${product.inStock
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-red-100 text-red-700'
+                                                        }`}
+                                                >
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${product.inStock ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                                    {product.inStock ? 'In Stock' : 'Out'}
+                                                </button>
+                                                <button
+                                                    onClick={() => toggleStatus(product, 'isActive')}
+                                                    disabled={actionLoading === product._id}
+                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${product.isActive
+                                                            ? 'bg-blue-100 text-blue-700'
+                                                            : 'bg-neutral-100 text-neutral-500'
+                                                        }`}
+                                                >
+                                                    {product.isActive ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+                                                    {product.isActive ? 'Active' : 'Hidden'}
+                                                </button>
+                                                <div className="flex items-center gap-0.5 ml-auto">
+                                                    <Link
+                                                        href={`/admin/products/${product._id}`}
+                                                        className="p-1.5 text-neutral-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit2 className="w-3.5 h-3.5" />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => toggleStatus(product, 'isFeatured')}
+                                                        disabled={actionLoading === product._id}
+                                                        className={`p-1.5 rounded-lg transition-colors ${product.isFeatured ? 'text-amber-500' : 'text-neutral-400'}`}
+                                                    >
+                                                        {product.isFeatured ? <Star className="w-3.5 h-3.5 fill-current" /> : <StarOff className="w-3.5 h-3.5" />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleteModal({ open: true, product })}
+                                                        disabled={actionLoading === product._id}
+                                                        className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-neutral-50 border-b border-neutral-200">
                                     <tr>
@@ -652,11 +770,11 @@ export default function AdminProductsPage() {
 
                         {/* Pagination */}
                         {pagination && pagination.totalPages > 1 && (
-                            <div className="px-6 py-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="px-4 sm:px-6 py-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <p className="text-sm text-neutral-500">
-                                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalCount)} of {pagination.totalCount} products
+                                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalCount)} of {pagination.totalCount}
                                 </p>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 sm:gap-2">
                                     <button
                                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={!pagination.hasPrevPage || loading}
@@ -682,7 +800,7 @@ export default function AdminProductsPage() {
                                                     key={pageNum}
                                                     onClick={() => setCurrentPage(pageNum)}
                                                     disabled={loading}
-                                                    className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${currentPage === pageNum
+                                                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
                                                             ? 'bg-amber-500 text-white'
                                                             : 'hover:bg-neutral-100 text-neutral-600'
                                                         }`}
