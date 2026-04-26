@@ -26,25 +26,13 @@ const CODE_PREFIXES = {
 };
 
 async function uploadImage(file) {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-  if (!cloudName || !preset) {
-    throw new Error('Cloudinary not configured. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to .env.local');
-  }
-
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('upload_preset', preset);
-  fd.append('folder', 'trendseller');
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body: fd,
-  });
-  if (!res.ok) throw new Error('Image upload failed');
+  const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
   const data = await res.json();
-  return data.secure_url;
+  if (!res.ok || !data.success) throw new Error(data.error || 'Image upload failed');
+  return data.url;
 }
 
 export default function QuickAddPage() {
