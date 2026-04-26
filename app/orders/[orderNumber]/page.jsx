@@ -39,7 +39,7 @@ export default function CustomerOrderDetailPage({ params }) {
     };
 
     const getPaymentMethodLabel = (method) => {
-        const labels = { 'cod': 'Cash on Delivery', 'jazzcash': 'JazzCash', 'easypaisa': 'EasyPaisa', 'bank-transfer': 'Bank Transfer' };
+        const labels = { 'cod': 'Cash on Delivery', 'jazzcash': 'JazzCash', 'nayapay': 'NayaPay' };
         return labels[method] || method;
     };
 

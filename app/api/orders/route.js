@@ -20,7 +20,7 @@ export async function POST(request) {
     if (!paymentMethod)
       return NextResponse.json({ success: false, error: 'Payment method is required' }, { status: 400 });
 
-    const validMethods = ['cod', 'card', 'bank-transfer', 'jazzcash', 'easypaisa', 'payfast'];
+    const validMethods = ['cod', 'jazzcash', 'nayapay'];
     if (!validMethods.includes(paymentMethod))
       return NextResponse.json({ success: false, error: 'Invalid payment method' }, { status: 400 });
 

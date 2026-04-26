@@ -45,8 +45,10 @@ export default function NewProductPage() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('basic');
     const [saving, setSaving] = useState(false);
+    const [generating, setGenerating] = useState(false);
     const [toast, setToast] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
+    const [aiNotes, setAiNotes] = useState('');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -140,6 +142,42 @@ export default function NewProductPage() {
         }));
     };
 
+    const handleAIGenerate = async () => {
+        if (!formData.name.trim()) {
+            showToast('Enter a product name first', 'error');
+            return;
+        }
+        setGenerating(true);
+        try {
+            const response = await fetch('/api/admin/generate-product', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formData.name,
+                    category: formData.category,
+                    price: formData.price,
+                    notes: aiNotes,
+                }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'AI generation failed');
+            setFormData(prev => ({
+                ...prev,
+                description: data.description || prev.description,
+                features: data.features?.length ? data.features : prev.features,
+                metaTitle: data.metaTitle || prev.metaTitle,
+                metaDescription: data.metaDescription || prev.metaDescription,
+                productCode: data.productCode || prev.productCode,
+            }));
+            showToast('AI content generated — review and save!');
+            setActiveTab('details');
+        } catch (error) {
+            showToast(error.message, 'error');
+        } finally {
+            setGenerating(false);
+        }
+    };
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -231,6 +269,16 @@ export default function NewProductPage() {
                             >
                                 {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Preview'}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAIGenerate}
+                                disabled={generating}
+                                className="px-3 sm:px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-900 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                <span className="hidden sm:inline">{generating ? 'Generating...' : 'AI Generate'}</span>
+                                <span className="sm:hidden">{generating ? '...' : 'AI'}</span>
                             </button>
                             <button
                                 onClick={handleSubmit}
@@ -345,6 +393,22 @@ export default function NewProductPage() {
                                                     </button>
                                                 ))}
                                             </div>
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                                AI Notes <span className="text-zinc-500 font-normal">(optional — extra details for AI)</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={aiNotes}
+                                                onChange={(e) => setAiNotes(e.target.value)}
+                                                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors"
+                                                placeholder="e.g. waterproof, stainless steel, gift for men, branded box included"
+                                            />
+                                            <p className="mt-1 text-xs text-zinc-500">
+                                                Fill Name + Category + Price above, then hit the <span className="text-violet-400">✦ AI Generate</span> button
+                                            </p>
                                         </div>
 
                                         <div>

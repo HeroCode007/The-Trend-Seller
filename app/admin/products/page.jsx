@@ -24,7 +24,8 @@ import {
     MoreVertical,
     ArrowUpDown,
     Star,
-    StarOff
+    StarOff,
+    Zap
 } from 'lucide-react';
 
 export default function AdminProductsPage() {
@@ -278,11 +279,18 @@ export default function AdminProductsPage() {
                         Refresh
                     </button>
                     <Link
+                        href="/admin/products/quick-add"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium"
+                    >
+                        <Zap className="w-4 h-4" />
+                        Quick Add
+                    </Link>
+                    <Link
                         href="/admin/products/new"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium"
                     >
                         <Plus className="w-4 h-4" />
-                        Add Product
+                        Full Form
                     </Link>
                 </div>
             </div>

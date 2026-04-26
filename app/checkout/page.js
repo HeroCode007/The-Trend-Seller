@@ -42,7 +42,7 @@ export default function CheckoutPage() {
         city: '',
         postalCode: '',
         country: 'Pakistan',
-        paymentMethod: 'bank-transfer',
+        paymentMethod: 'jazzcash',
     });
     const [formErrors, setFormErrors] = useState({});
     const [touched, setTouched] = useState({});
@@ -122,7 +122,7 @@ export default function CheckoutPage() {
 
         try {
             // Client-side validation
-            if (!['bank-transfer', 'jazzcash', 'easypaisa'].includes(formData.paymentMethod)) {
+            if (!['cod', 'jazzcash', 'nayapay'].includes(formData.paymentMethod)) {
                 toast({
                     title: 'Invalid Payment Method',
                     description: 'Please select a valid payment method.',
@@ -212,9 +212,9 @@ export default function CheckoutPage() {
 
     const paymentMethods = [
         {
-            id: 'bank-transfer',
-            name: 'Bank Transfer',
-            description: 'Direct bank transfer',
+            id: 'cod',
+            name: 'Cash on Delivery',
+            description: 'Pay when delivered',
             icon: Banknote,
             color: 'amber',
             gradient: 'from-amber-500 to-orange-600',
@@ -234,8 +234,8 @@ export default function CheckoutPage() {
             textColor: 'text-red-700'
         },
         {
-            id: 'easypaisa',
-            name: 'EasyPaisa',
+            id: 'nayapay',
+            name: 'NayaPay',
             description: 'Mobile wallet',
             icon: Wallet,
             color: 'green',
@@ -554,14 +554,14 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <div>
                                                     <p className={`text-sm font-medium ${selectedPayment?.textColor}`}>
-                                                        {formData.paymentMethod === 'bank-transfer' && 'Secure Bank Transfer'}
+                                                        {formData.paymentMethod === 'cod' && 'Cash on Delivery'}
                                                         {formData.paymentMethod === 'jazzcash' && 'JazzCash Mobile Payment'}
-                                                        {formData.paymentMethod === 'easypaisa' && 'EasyPaisa Mobile Payment'}
+                                                        {formData.paymentMethod === 'nayapay' && 'NayaPay Mobile Payment'}
                                                     </p>
                                                     <p className="text-sm text-neutral-600 mt-1">
-                                                        {formData.paymentMethod === 'bank-transfer' && 'Account details will be shown after placing order. Complete transfer within 24 hours.'}
+                                                        {formData.paymentMethod === 'cod' && 'Pay cash when your order is delivered to your door.'}
                                                         {formData.paymentMethod === 'jazzcash' && 'You\'ll receive payment instructions on the next page.'}
-                                                        {formData.paymentMethod === 'easypaisa' && 'You\'ll receive payment instructions on the next page.'}
+                                                        {formData.paymentMethod === 'nayapay' && 'You\'ll receive payment instructions on the next page.'}
                                                     </p>
                                                 </div>
                                             </div>

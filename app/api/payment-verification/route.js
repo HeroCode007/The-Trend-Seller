@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 // Constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-const VALID_PAYMENT_METHODS = ['jazzcash', 'easypaisa', 'bank-transfer'];
+const VALID_PAYMENT_METHODS = ['jazzcash', 'nayapay'];
 
 export async function POST(request) {
     try {

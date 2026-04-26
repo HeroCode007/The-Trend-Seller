@@ -50,7 +50,7 @@ export default function AdminOrdersPage() {
     };
 
     const getPaymentMethodLabel = (method) => {
-        const labels = { 'cod': 'COD', 'jazzcash': 'JazzCash', 'easypaisa': 'EasyPaisa', 'bank-transfer': 'Bank Transfer' };
+        const labels = { 'cod': 'COD', 'jazzcash': 'JazzCash', 'nayapay': 'NayaPay' };
         return labels[method] || method;
     };
 

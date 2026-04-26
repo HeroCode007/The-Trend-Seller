@@ -13,7 +13,7 @@ export default function PaymentVerificationPage({ params }) {
     const redirectTimeoutRef = useRef(null);
 
     // Allowed payment methods
-    const allowedMethods = ['jazzcash', 'easypaisa', 'bank'];
+    const allowedMethods = ['jazzcash', 'nayapay', 'cod'];
     const selectedMethod = searchParams.get('paymentMethod');
     const initialPaymentMethod = allowedMethods.includes(selectedMethod) ? selectedMethod : 'jazzcash';
 
@@ -40,9 +40,9 @@ export default function PaymentVerificationPage({ params }) {
 
     // Payment method to API mapping
     const METHOD_MAPPING = {
-        'bank': 'bank-transfer',
         'jazzcash': 'jazzcash',
-        'easypaisa': 'easypaisa'
+        'nayapay': 'nayapay',
+        'cod': 'cod'
     };
 
     // Fetch order data
@@ -411,7 +411,7 @@ ${itemsList}
 📍 *Delivery Address:*
 ${order.shippingAddress?.address}, ${order.shippingAddress?.city}, ${order.shippingAddress?.postalCode}
 
-💳 *Payment Method:* ${order.paymentMethod === 'bank-transfer' ? 'Bank Transfer' : order.paymentMethod === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}
+💳 *Payment Method:* ${order.paymentMethod === 'jazzcash' ? 'JazzCash' : order.paymentMethod === 'cod' ? 'COD (NayaPay)' : 'NayaPay'}
 
 Please complete your payment and upload the screenshot to confirm your order.
 
@@ -540,8 +540,8 @@ Thank you for shopping with The Trend Seller! 🙏`;
                             className="w-full px-4 py-2 border border-neutral-300 rounded-lg bg-neutral-50 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
                         >
                             <option value="jazzcash">JazzCash</option>
-                            <option value="easypaisa">EasyPaisa</option>
-                            <option value="bank">Bank Transfer</option>
+                            <option value="nayapay">NayaPay</option>
+                            <option value="cod">COD (NayaPay)</option>
                         </select>
                     </div>
 

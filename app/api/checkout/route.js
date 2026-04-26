@@ -33,7 +33,7 @@ export async function POST(request) {
         { status: 400 }
       );
 
-    const validMethods = ['cod', 'jazzcash', 'easypaisa', 'bank-transfer'];
+    const validMethods = ['cod', 'jazzcash', 'nayapay'];
     if (!validMethods.includes(paymentMethod))
       return NextResponse.json(
         { success: false, error: 'Invalid payment method' },
@@ -81,14 +81,9 @@ export async function POST(request) {
         paymentNote = 'Please upload your JazzCash payment screenshot for verification.';
         break;
 
-      case 'easypaisa':
+      case 'nayapay':
         paymentStatus = 'awaiting_verification';
-        paymentNote = 'Please upload your EasyPaisa payment screenshot for verification.';
-        break;
-
-      case 'bank-transfer':
-        paymentStatus = 'awaiting_verification';
-        paymentNote = 'Please transfer payment to the listed bank account and upload the screenshot for verification.';
+        paymentNote = 'Please upload your NayaPay payment screenshot for verification.';
         break;
 
       default:

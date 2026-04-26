@@ -8,7 +8,7 @@ export async function GET(request) {
         const method = searchParams.get('method');
 
         // Validate payment method
-        const validMethods = ['jazzcash', 'easypaisa', 'bank'];
+        const validMethods = ['jazzcash', 'nayapay', 'cod'];
         if (!method || !validMethods.includes(method)) {
             return NextResponse.json({
                 success: false,
@@ -26,22 +26,21 @@ export async function GET(request) {
                 color: 'bg-blue-50 border-blue-200',
                 textColor: 'text-blue-800',
             },
-            easypaisa: {
-                accountName: process.env.EASYPAISA_ACCOUNT_NAME || 'Syed Irfan Shah',
-                accountNumber: process.env.EASYPAISA_ACCOUNT_NUMBER || '0315-1787031',
-                title: 'EasyPaisa Account',
+            nayapay: {
+                accountName: process.env.NAYAPAY_ACCOUNT_NAME || 'Syed Saif Ali',
+                accountNumber: process.env.NAYAPAY_ACCOUNT_NUMBER || '03234653567',
+                title: 'NayaPay Account',
                 icon: '💳',
                 color: 'bg-green-50 border-green-200',
                 textColor: 'text-green-800',
             },
-            bank: {
-                accountName: process.env.BANK_ACCOUNT_NAME || 'Syed Khizar Hasnain',
-                accountNumber: process.env.BANK_ACCOUNT_NUMBER || '3651301000000670',
-                bankName: process.env.BANK_NAME || 'Faysal Bank',
-                title: 'Bank Transfer',
-                icon: '🏦',
-                color: 'bg-yellow-50 border-yellow-200',
-                textColor: 'text-yellow-800',
+            cod: {
+                accountName: process.env.NAYAPAY_ACCOUNT_NAME || 'Syed Saif Ali',
+                accountNumber: process.env.NAYAPAY_ACCOUNT_NUMBER || '03234653567',
+                title: 'COD — Pay via NayaPay',
+                icon: '📦',
+                color: 'bg-amber-50 border-amber-200',
+                textColor: 'text-amber-800',
             },
         };
 
