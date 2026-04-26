@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Star, ThumbsUp, MessageSquare, Check, AlertCircle } from 'lucide-react';
 
 export default function ReviewSection({ productId }) {
@@ -19,15 +19,10 @@ export default function ReviewSection({ productId }) {
     comment: ''
   });
 
-  useEffect(() => {
-    fetchReviews();
-  }, [productId, sortBy]);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const response = await fetch(`/api/reviews/${productId}?sort=${sortBy}`);
       const data = await response.json();
-
       if (data.success) {
         setReviews(data.reviews);
         setStats(data.stats);
@@ -37,7 +32,9 @@ export default function ReviewSection({ productId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, sortBy]);
+
+  useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

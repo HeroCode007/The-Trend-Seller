@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
@@ -47,9 +47,8 @@ export default function CheckoutPage() {
     const [formErrors, setFormErrors] = useState({});
     const [touched, setTouched] = useState({});
 
-    useEffect(() => {
-        fetchCart();
-    }, []);
+    const initCart = useCallback(() => { fetchCart(); }, [fetchCart]);
+    useEffect(() => { initCart(); }, [initCart]);
 
     useEffect(() => {
         if (!loading && cart.items.length === 0) {

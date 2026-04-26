@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, User, Phone, Mail, MapPin, Package, Truck, CheckCircle, Clock, Loader2, AlertCircle, Calendar, XCircle, Bookmark } from 'lucide-react';
@@ -11,11 +11,8 @@ export default function CustomerOrderDetailPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    useEffect(() => { fetchOrder(); }, [orderNumber]);
-
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         try {
-            // Customer view - use public API
             const res = await fetch(`/api/orders/${orderNumber}`);
             const data = await res.json();
             if (data.success) {
@@ -29,7 +26,9 @@ export default function CustomerOrderDetailPage({ params }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [orderNumber]);
+
+    useEffect(() => { fetchOrder(); }, [fetchOrder]);
 
     const formatCurrency = (amount) => `Rs. ${Number(amount || 0).toLocaleString('en-PK')}`;
 

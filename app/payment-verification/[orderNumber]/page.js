@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, Upload, AlertCircle, Copy, Check, X, MessageCircle } from 'lucide-react';
@@ -45,15 +45,49 @@ export default function PaymentVerificationPage({ params }) {
         'cod': 'cod'
     };
 
-    // Fetch order data
-    useEffect(() => {
-        fetchOrder();
-    }, [orderNumber]);
+    const fetchOrder = useCallback(async () => {
+        try {
+            const response = await fetch(`/api/orders/${orderNumber}?t=${Date.now()}`, {
+                cache: 'no-store'
+            });
+            const data = await response.json();
 
-    // Fetch account details when payment method changes
-    useEffect(() => {
-        fetchAccountDetails();
-    }, [paymentMethod]);
+            if (!data.success) {
+                toast({ title: 'Error', description: 'Order not found', variant: 'destructive' });
+                window.location.replace('/');
+                return;
+            }
+
+            setOrder(data.order);
+        } catch (error) {
+            console.error('Error fetching order:', error);
+            toast({ title: 'Error', description: 'Failed to load order details', variant: 'destructive' });
+        } finally {
+            setLoading(false);
+        }
+    }, [orderNumber, toast]);
+
+    const fetchAccountDetails = useCallback(async () => {
+        setAccountLoading(true);
+        try {
+            const response = await fetch(`/api/payment-accounts?method=${paymentMethod}`);
+            const data = await response.json();
+
+            if (data.success) {
+                setAccountDetails(data.account);
+            } else {
+                toast({ title: 'Error', description: 'Failed to load payment account details', variant: 'destructive' });
+            }
+        } catch (error) {
+            console.error('Error fetching account details:', error);
+            toast({ title: 'Error', description: 'Failed to load payment account details', variant: 'destructive' });
+        } finally {
+            setAccountLoading(false);
+        }
+    }, [paymentMethod, toast]);
+
+    useEffect(() => { fetchOrder(); }, [fetchOrder]);
+    useEffect(() => { fetchAccountDetails(); }, [fetchAccountDetails]);
 
     // Check if screenshot already uploaded
     useEffect(() => {
@@ -63,79 +97,20 @@ export default function PaymentVerificationPage({ params }) {
                 description: 'Payment screenshot has already been uploaded for this order.',
                 variant: 'destructive',
             });
-            // Hard redirect
             window.location.replace(`/orders/${orderNumber}`);
         }
-    }, [order]);
+    }, [order, orderNumber, toast, uploadSuccess]);
 
     // Cleanup preview URL and timeout
     useEffect(() => {
+        const timeout = redirectTimeoutRef.current;
         return () => {
             if (previewUrl?.startsWith('blob:')) {
                 URL.revokeObjectURL(previewUrl);
             }
-            if (redirectTimeoutRef.current) {
-                clearTimeout(redirectTimeoutRef.current);
-            }
+            if (timeout) clearTimeout(timeout);
         };
     }, [previewUrl]);
-
-    const fetchOrder = async () => {
-        try {
-            const response = await fetch(`/api/orders/${orderNumber}?t=${Date.now()}`, {
-                cache: 'no-store'
-            });
-            const data = await response.json();
-
-            if (!data.success) {
-                toast({
-                    title: 'Error',
-                    description: 'Order not found',
-                    variant: 'destructive',
-                });
-                window.location.replace('/');
-                return;
-            }
-
-            setOrder(data.order);
-        } catch (error) {
-            console.error('Error fetching order:', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to load order details',
-                variant: 'destructive',
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchAccountDetails = async () => {
-        setAccountLoading(true);
-        try {
-            const response = await fetch(`/api/payment-accounts?method=${paymentMethod}`);
-            const data = await response.json();
-
-            if (data.success) {
-                setAccountDetails(data.account);
-            } else {
-                toast({
-                    title: 'Error',
-                    description: 'Failed to load payment account details',
-                    variant: 'destructive',
-                });
-            }
-        } catch (error) {
-            console.error('Error fetching account details:', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to load payment account details',
-                variant: 'destructive',
-            });
-        } finally {
-            setAccountLoading(false);
-        }
-    };
 
     // Core file processing shared by click-select and drag-drop
     const processFile = async (file) => {
