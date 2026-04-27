@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
@@ -12,9 +12,8 @@ export default function CartPage() {
     const router = useRouter();
     const [updating, setUpdating] = useState({});
 
-    useEffect(() => {
-        fetchCart();
-    }, []);
+    const initCart = useCallback(() => { fetchCart(); }, [fetchCart]);
+    useEffect(() => { initCart(); }, [initCart]);
 
     const handleQuantityChange = async (productId, newQuantity) => {
         if (newQuantity < 1) return;

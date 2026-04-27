@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -8,13 +8,8 @@ import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-};
-
 export const metadata: Metadata = {
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   metadataBase: new URL('https://www.thetrendseller.com/'),
   title: {
     default: 'The Trend Seller - Premium Watches, Belts & Wallets',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -16,9 +16,7 @@ export default function AdminOrderDetailPage({ params }) {
     const [paymentStatus, setPaymentStatus] = useState('');
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    useEffect(() => { fetchOrder(); }, [orderNumber]);
-
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         try {
             const res = await fetch(`/api/admin/orders/${orderNumber}`);
             const data = await res.json();
@@ -35,7 +33,9 @@ export default function AdminOrderDetailPage({ params }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [orderNumber]);
+
+    useEffect(() => { fetchOrder(); }, [fetchOrder]);
 
     const handleUpdateOrder = async () => {
         setSaving(true);

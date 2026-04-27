@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -80,21 +80,12 @@ export default function EditProductPage() {
   const [newFeature, setNewFeature] = useState('');
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    fetchProduct();
-  }, [productId]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/products/${productId}`);
-      if (!response.ok) {
-        throw new Error('Product not found');
-      }
+      if (!response.ok) throw new Error('Product not found');
       const data = await response.json();
-
-      // API returns { success: true, product: {...} }
       const product = data.product || data;
-
       setFormData({
         name: product.name || '',
         slug: product.slug || '',
@@ -120,7 +111,9 @@ export default function EditProductPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, router]);
+
+  useEffect(() => { fetchProduct(); }, [fetchProduct]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
