@@ -1,4 +1,4 @@
-import { Watch, Shield, Heart, Truck, Award, Users, Package, Star } from 'lucide-react';
+import { Watch, Shield, Heart, Truck, Award, Users, Package, Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {
@@ -51,6 +51,25 @@ export default function AboutPage() {
                 manufacturers and trusted suppliers to bring you quality you can feel — and style that
                 lasts.
               </p>
+            </div>
+          </section>
+
+          {/* Founder Story Callout */}
+          <section className="mb-16">
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div>
+                <p className="text-xs font-semibold text-amber-600 uppercase tracking-widest mb-1">Meet the Founder</p>
+                <h3 className="text-2xl font-bold text-neutral-900 mb-2">The Story Behind The Brand</h3>
+                <p className="text-neutral-600 max-w-md">
+                  Read how Syed Saif Ali built The Trend Seller from scratch in just 6 months — the real journey, the milestones, and what comes next.
+                </p>
+              </div>
+              <Link
+                href="/founder"
+                className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-neutral-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
+              >
+                Read the Story <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </section>
 

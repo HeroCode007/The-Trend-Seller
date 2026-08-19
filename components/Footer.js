@@ -65,6 +65,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/founder" className="text-sm text-neutral-300 hover:text-white transition-colors">
+                  Founder Story
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="text-sm text-neutral-300 hover:text-white transition-colors">
                   Contact
                 </Link>

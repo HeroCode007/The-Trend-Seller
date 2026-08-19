@@ -26,6 +26,14 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'iili.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.iili.io',
+      },
+      {
+        protocol: 'https',
         hostname: '**.cloudinary.com',
       },
     ],

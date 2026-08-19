@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 
 export default function ProductCard({ product, imageObject = 'cover', imagePaddingClass = '' }) {
+  const [imgSrc, setImgSrc] = useState(product.image);
+
   // Check if product is in stock (default to true if not specified)
   const isInStock = product.inStock !== false;
 
@@ -25,13 +28,14 @@ export default function ProductCard({ product, imageObject = 'cover', imagePaddi
       {/* Image container */}
       <div className={`aspect-square relative overflow-hidden bg-neutral-100 ${imagePaddingClass}`}>
         <Image
-          src={product.image}
+          src={imgSrc}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className={`object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 ${!isInStock ? 'opacity-50 grayscale-[30%]' : ''
             }`}
           loading="lazy"
+          onError={() => setImgSrc('/TTS.png')}
         />
 
         {/* Out of Stock Badge */}
