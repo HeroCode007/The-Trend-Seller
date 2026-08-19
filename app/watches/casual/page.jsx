@@ -188,7 +188,7 @@ const extractUniqueFeatures = (watches) => {
 function EnhancedProductCard({ product }) {
     const [isHovered, setIsHovered] = useState(false);
     const [isWishlisted, setIsWishlisted] = useState(false);
-
+    const [imgSrc, setImgSrc] = useState(product.image || '/TTS.png');
     const isOutOfStock = product.inStock === false;
 
     return (
@@ -262,11 +262,12 @@ function EnhancedProductCard({ product }) {
                                 transition={{ duration: 0.4, ease: "easeOut" }}
                             >
                                 <Image
-                                    src={product.image}
+                                    src={imgSrc}
                                     alt={product.name}
                                     fill
                                     className="object-contain drop-shadow-xl"
                                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                    onError={() => setImgSrc('/TTS.png')}
                                 />
                             </motion.div>
                         </div>

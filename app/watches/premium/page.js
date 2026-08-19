@@ -25,6 +25,7 @@ const cardAnim = {
 
 // ── Product Card ────────────────────────────────────────────────────────────
 function WatchCard({ product }) {
+    const [imgSrc, setImgSrc] = useState(product.image || '/TTS.png');
     const outOfStock = product.inStock === false;
 
     return (
@@ -40,11 +41,12 @@ function WatchCard({ product }) {
                             transition={{ duration: 0.4, ease: 'easeOut' }}
                         >
                             <Image
-                                src={product.image}
+                                src={imgSrc}
                                 alt={product.name}
                                 fill
                                 className="object-contain p-6"
                                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                onError={() => setImgSrc('/TTS.png')}
                             />
                         </motion.div>
 

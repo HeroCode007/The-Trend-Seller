@@ -680,6 +680,7 @@ export default function WatchesPage() {
 function GridProductCard({ product }: { product: WatchWithCategory }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imgSrc, setImgSrc] = useState(product.image || '/TTS.png');
   const isOutOfStock = product.inStock === false;
 
   return (
@@ -733,11 +734,12 @@ function GridProductCard({ product }: { product: WatchWithCategory }) {
         <div className="relative aspect-square bg-gradient-to-br from-neutral-50 to-neutral-100 overflow-hidden">
           <div className={`relative w-full h-full p-6 transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}>
             <Image
-              src={product.image}
+              src={imgSrc}
               alt={product.name}
               fill
               className="object-contain"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              onError={() => setImgSrc('/TTS.png')}
             />
           </div>
 
@@ -805,6 +807,7 @@ function GridProductCard({ product }: { product: WatchWithCategory }) {
 // List View Product Card
 function ListProductCard({ product }: { product: WatchWithCategory }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imgSrc, setImgSrc] = useState(product.image || '/TTS.png');
   const isOutOfStock = product.inStock === false;
 
   return (
@@ -813,11 +816,12 @@ function ListProductCard({ product }: { product: WatchWithCategory }) {
       <Link href={`/watches/${product.slug}`} className="flex-shrink-0">
         <div className="relative w-full sm:w-48 h-48 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl overflow-hidden">
           <Image
-            src={product.image}
+            src={imgSrc}
             alt={product.name}
             fill
             className="object-contain p-4"
             sizes="(max-width: 640px) 100vw, 200px"
+            onError={() => setImgSrc('/TTS.png')}
           />
 
           {/* Badges */}
