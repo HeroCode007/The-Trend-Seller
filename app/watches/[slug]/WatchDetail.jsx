@@ -445,13 +445,13 @@ export default function WatchDetailClient({ product }) {
                                     <Truck className="w-6 h-6 text-amber-700" />
                                 </div>
                                 <p className="text-sm font-bold text-stone-900">Free Delivery</p>
-                                <p className="text-xs text-stone-500 mt-0.5">Above Rs. 5,000</p>
+                                <p className="text-xs text-stone-500 mt-0.5">Above Rs. 6,000</p>
                             </div>
                             <div className="text-center">
                                 <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
                                     <ShieldCheck className="w-6 h-6 text-emerald-700" />
                                 </div>
-                                <p className="text-sm font-bold text-stone-900">2 Year Warranty</p>
+                                <p className="text-sm font-bold text-stone-900">1 Year Warranty</p>
                                 <p className="text-xs text-stone-500 mt-0.5">Official Coverage</p>
                             </div>
                             <div className="text-center">
@@ -501,7 +501,7 @@ export default function WatchDetailClient({ product }) {
                                     <ul className="space-y-3 text-stone-600">
                                         <li className="flex items-start gap-3">
                                             <Truck className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                                            <span>Free shipping on orders above Rs. 5,000</span>
+                                            <span>Free shipping on orders above Rs. 6,000</span>
                                         </li>
                                         <li className="flex items-start gap-3">
                                             <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -522,7 +522,7 @@ export default function WatchDetailClient({ product }) {
                                     <ul className="space-y-3 text-stone-600">
                                         <li className="flex items-start gap-3">
                                             <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                            <span>2-year official manufacturer warranty</span>
+                                            <span>1-year official manufacturer warranty</span>
                                         </li>
                                         <li className="flex items-start gap-3">
                                             <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />

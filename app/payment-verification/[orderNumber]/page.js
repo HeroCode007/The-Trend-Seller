@@ -12,9 +12,9 @@ export default function PaymentVerificationPage({ params }) {
     const { orderNumber } = params;
     const redirectTimeoutRef = useRef(null);
 
-    // Allowed payment methods
-    const allowedMethods = ['jazzcash', 'nayapay', 'cod'];
-    const selectedMethod = searchParams.get('paymentMethod');
+    // This page only handles online wallet payments — COD orders skip it entirely
+    const allowedMethods = ['jazzcash', 'nayapay'];
+    const selectedMethod = searchParams.get('method');
     const initialPaymentMethod = allowedMethods.includes(selectedMethod) ? selectedMethod : 'jazzcash';
 
     const [order, setOrder] = useState(null);
@@ -41,8 +41,7 @@ export default function PaymentVerificationPage({ params }) {
     // Payment method to API mapping
     const METHOD_MAPPING = {
         'jazzcash': 'jazzcash',
-        'nayapay': 'nayapay',
-        'cod': 'cod'
+        'nayapay': 'nayapay'
     };
 
     const fetchOrder = useCallback(async () => {
@@ -55,6 +54,12 @@ export default function PaymentVerificationPage({ params }) {
             if (!data.success) {
                 toast({ title: 'Error', description: 'Order not found', variant: 'destructive' });
                 window.location.replace('/');
+                return;
+            }
+
+            // Cash on Delivery never needs online payment verification
+            if (data.order.paymentMethod === 'cod') {
+                window.location.replace(`/orders/${orderNumber}`);
                 return;
             }
 
@@ -386,7 +391,7 @@ ${itemsList}
 📍 *Delivery Address:*
 ${order.shippingAddress?.address}, ${order.shippingAddress?.city}, ${order.shippingAddress?.postalCode}
 
-💳 *Payment Method:* ${order.paymentMethod === 'jazzcash' ? 'JazzCash' : order.paymentMethod === 'cod' ? 'COD (NayaPay)' : 'NayaPay'}
+💳 *Payment Method:* ${order.paymentMethod === 'jazzcash' ? 'JazzCash' : 'NayaPay'}
 
 Please complete your payment and upload the screenshot to confirm your order.
 
@@ -516,7 +521,6 @@ Thank you for shopping with The Trend Seller! 🙏`;
                         >
                             <option value="jazzcash">JazzCash</option>
                             <option value="nayapay">NayaPay</option>
-                            <option value="cod">COD (NayaPay)</option>
                         </select>
                     </div>
 

@@ -168,16 +168,26 @@ export default function CheckoutPage() {
 
             const { orderNumber } = data.order;
 
-            // Success with animation delay
-            toast({
-                title: '✨ Order Placed Successfully!',
-                description: 'Redirecting to payment verification...',
-            });
+            // Cash on Delivery needs no online payment — send straight to the order page
+            if (formData.paymentMethod === 'cod') {
+                toast({
+                    title: '✨ Order Placed Successfully!',
+                    description: 'Redirecting to your order...',
+                });
 
-            // Smooth transition delay
-            setTimeout(() => {
-                router.push(`/payment-verification/${orderNumber}?method=${formData.paymentMethod}`);
-            }, 800);
+                setTimeout(() => {
+                    router.push(`/orders/${orderNumber}`);
+                }, 800);
+            } else {
+                toast({
+                    title: '✨ Order Placed Successfully!',
+                    description: 'Redirecting to payment verification...',
+                });
+
+                setTimeout(() => {
+                    router.push(`/payment-verification/${orderNumber}?method=${formData.paymentMethod}`);
+                }, 800);
+            }
 
         } catch (error) {
             console.error('Order Error:', error);
@@ -206,7 +216,7 @@ export default function CheckoutPage() {
 
     if (cart.items.length === 0) return null;
 
-    const shippingCost = cart.total >= 7000 ? 0 : 250;
+    const shippingCost = cart.total >= 6000 ? 0 : 250;
     const total = cart.total + shippingCost;
 
     const paymentMethods = [
@@ -690,7 +700,7 @@ export default function CheckoutPage() {
                                                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
                                                     <p className="text-xs text-amber-700">
                                                         <Sparkles className="w-3 h-3 inline mr-1" />
-                                                        Add ₨{(7000 - cart.total).toLocaleString('en-PK')} more for FREE shipping!
+                                                        Add ₨{(6000 - cart.total).toLocaleString('en-PK')} more for FREE shipping!
                                                     </p>
                                                 </div>
                                             )}

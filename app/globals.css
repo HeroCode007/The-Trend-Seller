@@ -110,3 +110,31 @@
 .animate-fade-in-up {
   animation: fade-in-up 1s ease forwards;
 }
+
+@keyframes badge-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.badge-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+
+.group:hover .badge-shimmer::after {
+  animation: badge-shimmer 900ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .badge-shimmer::after {
+    animation: none;
+  }
+}

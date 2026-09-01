@@ -8,7 +8,7 @@ export async function GET(request) {
         const method = searchParams.get('method');
 
         // Validate payment method
-        const validMethods = ['jazzcash', 'nayapay', 'cod'];
+        const validMethods = ['jazzcash', 'nayapay'];
         if (!method || !validMethods.includes(method)) {
             return NextResponse.json({
                 success: false,
@@ -33,14 +33,6 @@ export async function GET(request) {
                 icon: '💳',
                 color: 'bg-green-50 border-green-200',
                 textColor: 'text-green-800',
-            },
-            cod: {
-                accountName: process.env.NAYAPAY_ACCOUNT_NAME || 'Syed Saif Ali',
-                accountNumber: process.env.NAYAPAY_ACCOUNT_NUMBER || '03234653567',
-                title: 'COD — Pay via NayaPay',
-                icon: '📦',
-                color: 'bg-amber-50 border-amber-200',
-                textColor: 'text-amber-800',
             },
         };
 

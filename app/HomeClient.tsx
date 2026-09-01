@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Sparkles, Shield, Award, ChevronDown, Watch, Wallet, ArrowUpRight } from 'lucide-react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView } from 'framer-motion';
+import HorologyMasterpieceSection from '@/components/HorologyMasterpieceSection';
 
 // ============================================
 // TYPES
@@ -737,6 +738,9 @@ export default function EnhancedHeroWithCategories() {
                     </motion.div>
                 </motion.div>
             </motion.section>
+
+            {/* Masterpiece Exploded Horology Feature Section */}
+            <HorologyMasterpieceSection />
 
             {/* Categories Section */}
             <CategoriesSection />
