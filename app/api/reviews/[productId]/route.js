@@ -68,23 +68,36 @@ export async function GET(request, { params }) {
 
     // Execute query
     const skip = (page - 1) * limit;
-    const [reviews, totalReviews, stats, distribution] = await Promise.all([
+    const [reviews, totalReviews, allRatings] = await Promise.all([
       Review.find(query)
         .sort(sortObj)
         .skip(skip)
         .limit(limit)
         .lean(),
       Review.countDocuments(query),
-      Review.getAverageRating(productId),
-      Review.getRatingDistribution(productId)
+      Review.find(query, 'rating').lean()
     ]);
+
+    // Calculate rating stats safely
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let averageRating = 0;
+    if (allRatings.length > 0) {
+      let sum = 0;
+      allRatings.forEach(r => {
+        sum += r.rating;
+        if (distribution[r.rating] !== undefined) {
+          distribution[r.rating]++;
+        }
+      });
+      averageRating = parseFloat((sum / allRatings.length).toFixed(1));
+    }
 
     return NextResponse.json({
       success: true,
       reviews,
       stats: {
-        averageRating: stats.averageRating || 0,
-        totalReviews: stats.totalReviews || 0,
+        averageRating,
+        totalReviews,
         distribution
       },
       pagination: {
@@ -97,7 +110,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error('Error fetching reviews:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch reviews', message: error.message },
+      { success: false, error: 'Failed to fetch reviews', message: error.message, stack: error.stack },
       { status: 500 }
     );
   }
