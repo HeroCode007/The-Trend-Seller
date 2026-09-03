@@ -4,6 +4,8 @@ import connectDB from '@/lib/db';
 import Review from '@/models/Review';
 import Product from '@/models/Product';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to resolve real Product ObjectId
 async function resolveProductId(param) {
   if (!param) return null;
@@ -24,9 +26,8 @@ async function resolveProductId(param) {
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const resolvedParams = await params;
-    const rawProductId = resolvedParams.productId;
-    const targetProductId = await resolveProductId(rawProductId) || rawProductId;
+    const rawProductId = params?.productId;
+    const targetProductId = (await resolveProductId(rawProductId)) || rawProductId;
 
     const { searchParams } = new URL(request.url);
 
@@ -106,9 +107,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     await connectDB();
-    const resolvedParams = await params;
-    const rawProductId = resolvedParams.productId;
-    const targetProductId = await resolveProductId(rawProductId) || rawProductId;
+    const rawProductId = params?.productId;
+    const targetProductId = (await resolveProductId(rawProductId)) || rawProductId;
 
     if (!mongoose.isValidObjectId(targetProductId)) {
       return NextResponse.json(
