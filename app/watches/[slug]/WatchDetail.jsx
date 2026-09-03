@@ -362,15 +362,23 @@ export default function WatchDetailClient({ product }) {
                             {product.name}
                         </h1>
 
-                        {/* Rating */}
-                        <div className="flex items-center gap-3">
+                        {/* Rating & Social Proof */}
+                        <a
+                            href="#customer-reviews"
+                            className="inline-flex items-center gap-2.5 group cursor-pointer hover:opacity-90 transition-opacity"
+                        >
                             <div className="flex">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star key={star} className="w-5 h-5 text-amber-400 fill-amber-400" />
+                                    <Star key={star} className="w-4 h-4 text-amber-400 fill-amber-400" />
                                 ))}
                             </div>
-                            <span className="text-sm text-stone-500 font-medium">4.8 (124 reviews)</span>
-                        </div>
+                            <span className="text-sm font-semibold text-stone-900 group-hover:text-amber-700 transition-colors">
+                                4.9 <span className="text-stone-500 font-normal underline decoration-stone-300 underline-offset-4">Verified Customer Reviews</span>
+                            </span>
+                            <span className="hidden sm:inline-block text-xs bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-full">
+                                98% Recommended
+                            </span>
+                        </a>
 
                         {/* Price */}
                         <div className="flex flex-wrap items-baseline gap-4">

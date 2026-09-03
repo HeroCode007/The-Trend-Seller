@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Star } from 'lucide-react';
 import { belts } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import AddToCartButton from '@/components/AddToCartButton';
+import ReviewSection from '@/components/ReviewSection';
 
 export async function generateStaticParams() {
   return belts.map((belt) => ({
@@ -12,7 +13,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const product = belts.find((b) => b.slug === params.slug);
+  const resolvedParams = await params;
+  const product = belts.find((b) => b.slug === resolvedParams.slug);
 
   if (!product) {
     return {};
@@ -29,8 +31,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default function BeltDetailPage({ params }) {
-  const product = belts.find((b) => b.slug === params.slug);
+export default async function BeltDetailPage({ params }) {
+  const resolvedParams = await params;
+  const product = belts.find((b) => b.slug === resolvedParams.slug);
 
   if (!product) {
     notFound();
@@ -57,69 +60,87 @@ export default function BeltDetailPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <Link
-            href="/belts"
-            className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 mb-8 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Belts
-          </Link>
+      <div className="py-12 px-4 max-w-7xl mx-auto">
+        <Link
+          href="/belts"
+          className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 mb-8 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Belts
+        </Link>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="relative aspect-square rounded-lg overflow-hidden bg-neutral-100">
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200">
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+              priority
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 text-xs font-mono text-neutral-500 mb-2">
+              <span>SKU: {product.productCode}</span>
             </div>
 
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4">
-                {product.name}
-              </h1>
-              <p className="text-3xl font-bold text-neutral-900 mb-6">
-                ₨{product.price}
-              </p>
-              <p className="text-sm text-black-500 mb-2">
-                Product Code: <span className="font-semibold">{product.productCode}</span>
-              </p>
-              <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
-                {product.description}
-              </p>
+            <h1 className="text-3xl md:text-5xl font-bold text-neutral-900 mb-3">
+              {product.name}
+            </h1>
 
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-                  Key Features
-                </h2>
-                <ul className="space-y-3">
-                  {product.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-neutral-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+            {/* Social Proof */}
+            <a href="#customer-reviews" className="inline-flex items-center gap-2 mb-4 group">
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                ))}
               </div>
+              <span className="text-sm font-semibold text-neutral-900 group-hover:text-amber-700 transition-colors">
+                4.9 <span className="text-neutral-500 font-normal underline decoration-neutral-300">Verified Customer Reviews</span>
+              </span>
+            </a>
 
-              <AddToCartButton product={product} />
+            <p className="text-3xl font-bold text-neutral-900 mb-6">
+              Rs. {product.price.toLocaleString()}
+            </p>
 
-              <div className="mt-8 p-6 bg-neutral-50 rounded-lg border border-neutral-200">
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Product Information
-                </h3>
-                <p className="text-sm text-neutral-600">
-                  All our belts are handcrafted from premium leather. Free shipping on orders over ₨10,000. Returns accepted within 30 days.
-                </p>
-              </div>
+            <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
+              {product.description}
+            </p>
+
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-neutral-900 mb-4">
+                Key Features
+              </h2>
+              <ul className="space-y-3">
+                {product.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-neutral-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <AddToCartButton product={product} />
+
+            <div className="mt-8 p-6 bg-neutral-50 rounded-xl border border-neutral-200">
+              <h3 className="font-semibold text-neutral-900 mb-2">
+                Shipping & Warranty
+              </h3>
+              <p className="text-sm text-neutral-600 leading-relaxed">
+                Handcrafted from authentic 100% genuine leather. Free shipping on orders above Rs. 6,000. 1-Year Official Manufacturer Warranty included with 7-day checking guarantee.
+              </p>
             </div>
           </div>
         </div>
+
+        {/* Customer Reviews Section */}
+        <section className="mt-16 pt-12 border-t border-neutral-200">
+          <ReviewSection productId={product.slug} />
+        </section>
       </div>
     </>
   );

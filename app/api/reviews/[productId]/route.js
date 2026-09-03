@@ -1,21 +1,51 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectDB from '@/lib/db';
 import Review from '@/models/Review';
+import Product from '@/models/Product';
+
+// Helper to resolve real Product ObjectId
+async function resolveProductId(param) {
+  if (!param) return null;
+  if (mongoose.isValidObjectId(param)) {
+    return param;
+  }
+  const product = await Product.findOne({
+    $or: [
+      { slug: param },
+      { productCode: param }
+    ]
+  }).select('_id').lean();
+
+  return product ? product._id.toString() : null;
+}
 
 // GET - Fetch reviews for a product
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const { productId } = params;
+    const resolvedParams = await params;
+    const rawProductId = resolvedParams.productId;
+    const targetProductId = await resolveProductId(rawProductId) || rawProductId;
+
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
     const sort = searchParams.get('sort') || 'recent'; // recent, helpful, rating-high, rating-low
 
+    if (!mongoose.isValidObjectId(targetProductId)) {
+      return NextResponse.json({
+        success: true,
+        reviews: [],
+        stats: { averageRating: 0, totalReviews: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } },
+        pagination: { page: 1, limit, total: 0, pages: 0 }
+      });
+    }
+
     // Build query
     const query = {
-      productId,
+      productId: new mongoose.Types.ObjectId(targetProductId),
       isApproved: true // Only show approved reviews
     };
 
@@ -76,7 +106,17 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     await connectDB();
-    const { productId } = params;
+    const resolvedParams = await params;
+    const rawProductId = resolvedParams.productId;
+    const targetProductId = await resolveProductId(rawProductId) || rawProductId;
+
+    if (!mongoose.isValidObjectId(targetProductId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid product identifier' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
 
     const { name, email, rating, title, comment, images } = body;
@@ -98,7 +138,7 @@ export async function POST(request, { params }) {
 
     // Create review
     const review = await Review.create({
-      productId,
+      productId: new mongoose.Types.ObjectId(targetProductId),
       name,
       email,
       rating: parseInt(rating),

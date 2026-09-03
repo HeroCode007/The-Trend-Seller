@@ -102,7 +102,7 @@ export default function ReviewSection({ productId }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-200 p-6 md:p-8">
+    <div id="customer-reviews" className="bg-white rounded-2xl border border-stone-200 p-6 md:p-8 shadow-sm scroll-mt-28">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-neutral-900">Customer Reviews</h2>
