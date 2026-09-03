@@ -84,17 +84,33 @@ export async function GET(request, { params }) {
     if (allRatings.length > 0) {
       let sum = 0;
       allRatings.forEach(r => {
-        sum += r.rating;
-        if (distribution[r.rating] !== undefined) {
-          distribution[r.rating]++;
+        const rate = Number(r.rating) || 5;
+        sum += rate;
+        if (distribution[rate] !== undefined) {
+          distribution[rate]++;
         }
       });
       averageRating = parseFloat((sum / allRatings.length).toFixed(1));
     }
 
+    const formattedReviews = (reviews || []).map(r => ({
+      _id: r._id ? r._id.toString() : '',
+      id: r._id ? r._id.toString() : '',
+      productId: r.productId ? r.productId.toString() : '',
+      name: r.name || 'Verified Buyer',
+      email: r.email || '',
+      rating: Number(r.rating) || 5,
+      title: r.title || '',
+      comment: r.comment || '',
+      helpful: Number(r.helpful) || 0,
+      verified: r.verified !== false,
+      isApproved: r.isApproved !== false,
+      createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString()
+    }));
+
     return NextResponse.json({
       success: true,
-      reviews,
+      reviews: formattedReviews,
       stats: {
         averageRating,
         totalReviews,
