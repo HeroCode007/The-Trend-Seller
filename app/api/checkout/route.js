@@ -8,6 +8,7 @@ import {
   newOrderAdminEmail,
   orderConfirmationCustomerEmail
 } from '@/lib/email';
+import { sendWhatsAppNotification, newOrderWhatsAppMessage } from '@/lib/whatsapp';
 
 export async function POST(request) {
   try {
@@ -61,8 +62,8 @@ export async function POST(request) {
       0
     );
 
-    // Calculate delivery charges (free for orders ≥ 7000)
-    const deliveryCharges = subtotal >= 7000 ? 0 : 250;
+    // Calculate delivery charges (free for orders ≥ 6000)
+    const deliveryCharges = subtotal >= 6000 ? 0 : 250;
     const totalAmount = subtotal + deliveryCharges;
 
     // 💳 Determine payment status and URL
@@ -143,6 +144,14 @@ export async function POST(request) {
         html: orderConfirmationCustomerEmail(order, shippingAddress),
       }).catch(err => {
         console.error('Failed to send customer email:', err);
+        return { error: err.message };
+      })
+    );
+
+    // 3️⃣ WhatsApp notification to the owner — best-effort, never blocks checkout
+    emailPromises.push(
+      sendWhatsAppNotification(newOrderWhatsAppMessage(order, shippingAddress)).catch(err => {
+        console.error('Failed to send WhatsApp notification:', err);
         return { error: err.message };
       })
     );
