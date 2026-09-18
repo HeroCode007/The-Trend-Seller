@@ -1,0 +1,42 @@
+name: "24/7 Instagram Auto Publisher"
+
+on:
+  schedule:
+    # Runs every 15 minutes, 24/7 in GitHub cloud
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run Auto Publisher
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_ACCOUNT_ID: ${{ secrets.IG_ACCOUNT_ID }}
+        run: |
+          python scripts/auto-schedule-publisher.py
+
+      - name: Commit and Push Status Updates
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ -n $(git status -s scheduled_posts.json live_published_results.json scheduler_execution.log) ]]; then
+            git add scheduled_posts.json live_published_results.json scheduler_execution.log
+            git commit -m "Auto-published scheduled post to Instagram [skip ci]"
+            git push
+          else
+            echo "No schedule status changes to commit."
+          fi
