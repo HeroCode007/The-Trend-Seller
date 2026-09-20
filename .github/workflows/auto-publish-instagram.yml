@@ -36,7 +36,8 @@ jobs:
           if [[ -n $(git status -s scheduled_posts.json live_published_results.json scheduler_execution.log) ]]; then
             git add scheduled_posts.json live_published_results.json scheduler_execution.log
             git commit -m "Auto-published scheduled post to Instagram [skip ci]"
-            git push
+            git pull --rebase origin main || true
+            git push origin main
           else
             echo "No schedule status changes to commit."
           fi

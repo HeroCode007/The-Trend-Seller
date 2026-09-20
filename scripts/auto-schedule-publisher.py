@@ -14,11 +14,11 @@ SCHEDULE_FILE = os.path.join(BASE_DIR, "scheduled_posts.json")
 RESULTS_FILE = os.path.join(BASE_DIR, "live_published_results.json")
 LOG_FILE = os.path.join(BASE_DIR, "scheduler_execution.log")
 
-TOKEN = os.environ.get(
-    "IG_ACCESS_TOKEN", 
-    "IGAAoQCwwUk5ZABZAFloUDFqc0Q5Ym9wU2tvbk1tdGhvb1N3Nl8ySkdXdlhCclE4R1Bqa2tJN21XN3ZA6bVdmcndrSlNHLUE3a2hubnN0Nnhlb1lRbHVaMkxoZATNvQ3UzcU1sa0ZARVHZA5RGN6a25FY3ZAEd0lNSldjeHFXQW9RcXdJTQZDZD"
-)
-ACCOUNT_ID = os.environ.get("IG_ACCOUNT_ID", "17841404898221435")
+DEFAULT_TOKEN = "IGAAoQCwwUk5ZABZAFloUDFqc0Q5Ym9wU2tvbk1tdGhvb1N3Nl8ySkdXdlhCclE4R1Bqa2tJN21XN3ZA6bVdmcndrSlNHLUE3a2hubnN0Nnhlb1lRbHVaMkxoZATNvQ3UzcU1sa0ZARVHZA5RGN6a25FY3ZAEd0lNSldjeHFXQW9RcXdJTQZDZD"
+DEFAULT_ACCOUNT_ID = "17841404898221435"
+
+TOKEN = (os.environ.get("IG_ACCESS_TOKEN") or "").strip() or DEFAULT_TOKEN
+ACCOUNT_ID = (os.environ.get("IG_ACCOUNT_ID") or "").strip() or DEFAULT_ACCOUNT_ID
 
 def log(msg):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
