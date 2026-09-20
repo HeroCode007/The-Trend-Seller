@@ -3,10 +3,9 @@ echo ==========================================================
 echo Registering Windows Background Task for The Trend Seller
 echo ==========================================================
 
-set SCRIPT_PATH=c:\Users\user\Desktop\TrendSeller Update\The-Trend-Seller\scripts\auto-schedule-publisher.py
-set PYTHON_PATH=python.exe
+set BAT_PATH=%~dp0run-publisher.bat
 
-schtasks /Create /SC MINUTE /MO 15 /TN "TheTrendSeller-Publisher" /TR "\"%PYTHON_PATH%\" \"%SCRIPT_PATH%\"" /F
+schtasks /Create /SC MINUTE /MO 15 /TN "TheTrendSeller-Publisher" /TR "\"%BAT_PATH%\"" /F
 
 if %ERRORLEVEL% EQU 0 (
     echo [SUCCESS] Task "TheTrendSeller-Publisher" registered successfully!
