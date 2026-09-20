@@ -58,6 +58,28 @@ def record_live_published(item, media_id, permalink):
     with open(RESULTS_FILE, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
+def make_request_with_retries(req, timeout=45, max_retries=5, retry_delay=5):
+    last_err = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode('utf-8') if hasattr(e, 'read') else str(e)
+            log(f"HTTP ERROR {e.code} on attempt {attempt}/{max_retries}: {err_body}")
+            last_err = Exception(f"HTTP {e.code}: {err_body}")
+            # If rate limited (code 4) or 5xx, retry
+            if e.code not in (400, 401, 403, 404):
+                time.sleep(retry_delay)
+                continue
+            raise last_err
+        except Exception as e:
+            log(f"Network/API warning on attempt {attempt}/{max_retries}: {e}. Retrying in {retry_delay}s...")
+            last_err = e
+            if attempt < max_retries:
+                time.sleep(retry_delay)
+    raise last_err
+
 def publish_item(item):
     log(f"Initiating publication for [{item['product_code']}] {item['product_name']}...")
     try:
@@ -73,13 +95,12 @@ def publish_item(item):
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(req, timeout=45) as resp:
-            res = json.loads(resp.read().decode("utf-8"))
-            container_id = res["id"]
-            log(f"Container created successfully! ID: {container_id}")
+        res = make_request_with_retries(req)
+        container_id = res["id"]
+        log(f"Container created successfully! ID: {container_id}")
 
         # Small safety pause for Instagram asset processing
-        time.sleep(3)
+        time.sleep(4)
 
         # Step 2: Publish Container
         log("Step 2: Publishing container to feed...")
@@ -92,25 +113,19 @@ def publish_item(item):
             data=json.dumps(pub_payload).encode("utf-8"),
             headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(pub_req, timeout=45) as pub_resp:
-            pub_res = json.loads(pub_resp.read().decode("utf-8"))
-            media_id = pub_res["id"]
-            log(f"Published successfully! Media ID: {media_id}")
+        pub_res = make_request_with_retries(pub_req)
+        media_id = pub_res["id"]
+        log(f"Published successfully! Media ID: {media_id}")
 
         # Step 3: Fetch Permalink
         log("Step 3: Fetching live permalink...")
         get_req = urllib.request.Request(
             f"https://graph.instagram.com/v21.0/{media_id}?fields=permalink&access_token={TOKEN}"
         )
-        with urllib.request.urlopen(get_req, timeout=45) as get_resp:
-            info = json.loads(get_resp.read().decode("utf-8"))
-            permalink = info.get("permalink")
-            log(f"🎉 LIVE POST URL: {permalink}")
-            return media_id, permalink
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode('utf-8') if hasattr(e, 'read') else str(e)
-        log(f"HTTP ERROR {e.code}: {err_body}")
-        raise Exception(f"HTTP {e.code}: {err_body}")
+        info = make_request_with_retries(get_req)
+        permalink = info.get("permalink")
+        log(f"🎉 LIVE POST URL: {permalink}")
+        return media_id, permalink
     except Exception as e:
         log(f"API ERROR: {e}")
         raise e
