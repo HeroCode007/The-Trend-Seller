@@ -236,6 +236,33 @@ const customProductReviews = {
   ],
 
   // === POPULAR MEN'S PREMIUM & CASUAL WATCHES ===
+  'tomi-dual-dial-minimalist-gold-navy': [
+    {
+      name: 'Mohammad Ahsan (Karachi - DHA Phase 6)',
+      rating: 5,
+      title: 'Such a unique dual-dial design! Looks high-end',
+      comment: 'The navy blue dial with the gold case and black leather strap is an absolute winner. The off-center subdial gives it an executive look, looks way more expensive than Rs. 3,450. Came in the official black TOMI gift box.',
+      daysAgo: 3,
+      helpful: 14
+    },
+    {
+      name: 'Shahzaib Naveed (Lahore - Model Town)',
+      rating: 5,
+      title: 'Comfortable leather and crisp finish',
+      comment: 'Strap is super soft and does not feel stiff at all. The gold case has a rich polish that does not look cheap. Wore it to an office meeting today and got two inquiries already. 10/10 recommend.',
+      daysAgo: 12,
+      helpful: 9
+    },
+    {
+      name: 'Dr. Faisal Hayat (Islamabad - G-11)',
+      rating: 5,
+      title: 'Minimalist perfection',
+      comment: 'Very clean aesthetic. The contrast between midnight blue and gold hands is stunning under indoor lighting. Delivered securely within 48 hours via Trax with parcel checking allowed before payment.',
+      daysAgo: 26,
+      helpful: 7
+    }
+  ],
+
   'arabic-aura': [
     {
       name: 'Hamza Farooq (Lahore - Johar Town)',
