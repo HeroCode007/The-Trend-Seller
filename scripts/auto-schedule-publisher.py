@@ -158,7 +158,7 @@ def publish_item(item):
         log(f"API ERROR: {e}")
         raise e
 
-def check_and_publish_due_posts():
+def check_and_publish_due_posts(wait_threshold_sec=300):
     items = load_schedule()
     now = datetime.datetime.now().astimezone()
     changed = False
@@ -167,6 +167,14 @@ def check_and_publish_due_posts():
         if item.get("status") != "PENDING":
             continue
         sched_dt = datetime.datetime.fromisoformat(item["scheduled_time"])
+        diff_sec = (sched_dt - now).total_seconds()
+
+        # If due within the next wait_threshold_sec (e.g. 5 mins), wait until exact scheduled time
+        if 0 < diff_sec <= wait_threshold_sec:
+            log(f"Post [{item['product_code']}] is due in {int(diff_sec)} seconds. Waiting {int(diff_sec)}s until {sched_dt.strftime('%H:%M:%S')}...")
+            time.sleep(diff_sec)
+            now = datetime.datetime.now().astimezone()
+
         if now >= sched_dt:
             log(f"Due post detected: [{item['product_code']}] scheduled for {item['scheduled_time']} (Now is {now.isoformat()})")
             try:
