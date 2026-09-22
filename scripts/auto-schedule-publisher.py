@@ -176,29 +176,52 @@ def check_and_publish_due_posts(wait_threshold_sec=300):
     # Fetch recent Instagram posts live to prevent ANY duplicate posting
     recent_ig_posts = get_recent_instagram_media(limit=30)
 
+def find_duplicate_post_on_instagram(item, recent_ig_posts):
+    is_reel = item.get("media_type") == "REELS" or bool(item.get("video_url"))
+    caption_snippet = item.get("caption", "").strip()[:45].lower()
+    product_code = (item.get("product_code") or "").strip().upper()
+
+    for post in recent_ig_posts:
+        post_type = post.get("media_type")
+        post_caption = (post.get("caption") or "")
+        post_caption_lower = post_caption.lower()
+        post_caption_upper = post_caption.upper()
+
+        # Format match: A Reel is a VIDEO on Instagram; a static creative is an IMAGE
+        if is_reel and post_type != "VIDEO":
+            continue
+        if not is_reel and post_type == "VIDEO":
+            continue
+
+        # 1. Exact caption hook match (exact same creative content)
+        if caption_snippet and caption_snippet in post_caption_lower:
+            return post
+
+        # 2. Same format + same product code
+        if product_code and product_code in post_caption_upper:
+            return post
+
+    return None
+
+def check_and_publish_due_posts(wait_threshold_sec=300):
+    items = load_schedule()
+    now = datetime.datetime.now().astimezone()
+    changed = False
+
+    # Fetch recent Instagram posts live to prevent ANY duplicate posting
+    recent_ig_posts = get_recent_instagram_media(limit=30)
+
     for item in items:
         if item.get("status") != "PENDING":
             continue
 
         product_code = (item.get("product_code") or "").strip().upper()
-        clean_caption_snippet = item.get("caption", "").strip()[:45].lower()
 
-        # Step A: Check if this item is ALREADY LIVE on Instagram
-        already_live = None
-        for post in recent_ig_posts:
-            ig_caption = (post.get("caption") or "").upper()
-            ig_caption_lower = (post.get("caption") or "").lower()
-            # 1. Product code match (e.g. TTS-WW-053-SILVER)
-            if product_code and product_code in ig_caption:
-                already_live = post
-                break
-            # 2. Caption snippet match
-            if clean_caption_snippet and clean_caption_snippet in ig_caption_lower:
-                already_live = post
-                break
+        # Step A: Check if this exact content/format is ALREADY LIVE on Instagram
+        already_live = find_duplicate_post_on_instagram(item, recent_ig_posts)
 
         if already_live:
-            log(f"🛡️ STRICT DUPLICATE PREVENTION: [{product_code}] is ALREADY LIVE on Instagram at {already_live.get('permalink')}! Skipping publication.")
+            log(f"🛡️ STRICT DUPLICATE PREVENTION: [{product_code}] is ALREADY LIVE on Instagram ({already_live.get('permalink')})! Skipping publication to ensure no duplicate.")
             item["status"] = "PUBLISHED"
             item["media_id"] = already_live.get("id")
             item["permalink"] = already_live.get("permalink")
@@ -221,22 +244,16 @@ def check_and_publish_due_posts(wait_threshold_sec=300):
             
             # Step B: Double-check live Instagram right before sending publish request
             fresh_ig_posts = get_recent_instagram_media(limit=15)
-            duplicate_detected = False
-            for post in fresh_ig_posts:
-                ig_cap = (post.get("caption") or "").upper()
-                if product_code and product_code in ig_cap:
-                    log(f"🛡️ DUPLICATE INTERCEPTED: [{product_code}] already published ({post.get('permalink')}). Aborting.")
-                    item["status"] = "PUBLISHED"
-                    item["media_id"] = post.get("id")
-                    item["permalink"] = post.get("permalink")
-                    duplicate_detected = True
-                    changed = True
-                    break
-
+            duplicate_detected = find_duplicate_post_on_instagram(item, fresh_ig_posts)
             if duplicate_detected:
+                log(f"🛡️ DUPLICATE INTERCEPTED: [{product_code}] already live on Instagram ({duplicate_detected.get('permalink')}). Aborting.")
+                item["status"] = "PUBLISHED"
+                item["media_id"] = duplicate_detected.get("id")
+                item["permalink"] = duplicate_detected.get("permalink")
+                changed = True
                 continue
 
-            # Lock status to prevent concurrent execution
+            # Lock status to prevent concurrent duplicate execution
             item["status"] = "IN_PROGRESS"
             save_schedule(items)
 
