@@ -84,12 +84,25 @@ def publish_item(item):
     log(f"Initiating publication for [{item['product_code']}] {item['product_name']}...")
     try:
         # Step 1: Create Container
-        log("Step 1: Creating Instagram media container...")
-        payload = {
-            "image_url": item["image_url"],
-            "caption": item["caption"],
-            "access_token": TOKEN
-        }
+        is_reel = item.get("media_type") == "REELS" or bool(item.get("video_url"))
+        
+        if is_reel:
+            log("Step 1: Creating Instagram REEL media container...")
+            payload = {
+                "media_type": "REELS",
+                "video_url": item["video_url"],
+                "caption": item["caption"],
+                "share_to_feed": True,
+                "access_token": TOKEN
+            }
+        else:
+            log("Step 1: Creating Instagram photo media container...")
+            payload = {
+                "image_url": item["image_url"],
+                "caption": item["caption"],
+                "access_token": TOKEN
+            }
+            
         req = urllib.request.Request(
             f"https://graph.instagram.com/v21.0/{ACCOUNT_ID}/media",
             data=json.dumps(payload).encode("utf-8"),
@@ -99,8 +112,23 @@ def publish_item(item):
         container_id = res["id"]
         log(f"Container created successfully! ID: {container_id}")
 
-        # Small safety pause for Instagram asset processing
-        time.sleep(4)
+        if is_reel:
+            log("Waiting for Instagram video encoding/processing...")
+            for attempt in range(15):
+                time.sleep(4)
+                status_req = urllib.request.Request(
+                    f"https://graph.instagram.com/v21.0/{container_id}?fields=status_code,status&access_token={TOKEN}"
+                )
+                s_res = make_request_with_retries(status_req)
+                code = s_res.get("status_code")
+                log(f"Reel Status Check {attempt+1}: {code}")
+                if code == "FINISHED":
+                    break
+                elif code == "ERROR":
+                    raise Exception(f"Instagram video encoding error: {s_res}")
+        else:
+            # Small safety pause for Instagram photo processing
+            time.sleep(4)
 
         # Step 2: Publish Container
         log("Step 2: Publishing container to feed...")
@@ -179,7 +207,7 @@ def print_status():
 
         print(f"#{idx:02d} | {it['day']:<16} | {sched_dt.strftime('%b %d, %I:%M %p')} | [{it['product_code']}] {it['product_name'][:28]:<28}")
         print(f"     Status: {status_str}")
-        print(f"     CDN URL: {it['image_url']}")
+        print(f"     CDN URL: {it.get('video_url') or it.get('image_url')}")
         print("-" * 85)
     print("="*85 + "\n")
 
