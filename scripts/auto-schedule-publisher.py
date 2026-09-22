@@ -158,14 +158,55 @@ def publish_item(item):
         log(f"API ERROR: {e}")
         raise e
 
+def get_recent_instagram_media(limit=30):
+    try:
+        url = f"https://graph.instagram.com/v21.0/{ACCOUNT_ID}/media?fields=id,caption,permalink,media_type,timestamp&limit={limit}&access_token={TOKEN}"
+        req = urllib.request.Request(url)
+        res = make_request_with_retries(req)
+        return res.get("data", [])
+    except Exception as e:
+        log(f"Warning: Could not fetch recent Instagram media for duplicate check: {e}")
+        return []
+
 def check_and_publish_due_posts(wait_threshold_sec=300):
     items = load_schedule()
     now = datetime.datetime.now().astimezone()
     changed = False
 
+    # Fetch recent Instagram posts live to prevent ANY duplicate posting
+    recent_ig_posts = get_recent_instagram_media(limit=30)
+
     for item in items:
         if item.get("status") != "PENDING":
             continue
+
+        product_code = (item.get("product_code") or "").strip().upper()
+        clean_caption_snippet = item.get("caption", "").strip()[:45].lower()
+
+        # Step A: Check if this item is ALREADY LIVE on Instagram
+        already_live = None
+        for post in recent_ig_posts:
+            ig_caption = (post.get("caption") or "").upper()
+            ig_caption_lower = (post.get("caption") or "").lower()
+            # 1. Product code match (e.g. TTS-WW-053-SILVER)
+            if product_code and product_code in ig_caption:
+                already_live = post
+                break
+            # 2. Caption snippet match
+            if clean_caption_snippet and clean_caption_snippet in ig_caption_lower:
+                already_live = post
+                break
+
+        if already_live:
+            log(f"🛡️ STRICT DUPLICATE PREVENTION: [{product_code}] is ALREADY LIVE on Instagram at {already_live.get('permalink')}! Skipping publication.")
+            item["status"] = "PUBLISHED"
+            item["media_id"] = already_live.get("id")
+            item["permalink"] = already_live.get("permalink")
+            item["published_at"] = already_live.get("timestamp") or datetime.datetime.now().isoformat()
+            record_live_published(item, already_live.get("id"), already_live.get("permalink"))
+            changed = True
+            continue
+
         sched_dt = datetime.datetime.fromisoformat(item["scheduled_time"])
         diff_sec = (sched_dt - now).total_seconds()
 
@@ -177,6 +218,28 @@ def check_and_publish_due_posts(wait_threshold_sec=300):
 
         if now >= sched_dt:
             log(f"Due post detected: [{item['product_code']}] scheduled for {item['scheduled_time']} (Now is {now.isoformat()})")
+            
+            # Step B: Double-check live Instagram right before sending publish request
+            fresh_ig_posts = get_recent_instagram_media(limit=15)
+            duplicate_detected = False
+            for post in fresh_ig_posts:
+                ig_cap = (post.get("caption") or "").upper()
+                if product_code and product_code in ig_cap:
+                    log(f"🛡️ DUPLICATE INTERCEPTED: [{product_code}] already published ({post.get('permalink')}). Aborting.")
+                    item["status"] = "PUBLISHED"
+                    item["media_id"] = post.get("id")
+                    item["permalink"] = post.get("permalink")
+                    duplicate_detected = True
+                    changed = True
+                    break
+
+            if duplicate_detected:
+                continue
+
+            # Lock status to prevent concurrent execution
+            item["status"] = "IN_PROGRESS"
+            save_schedule(items)
+
             try:
                 media_id, permalink = publish_item(item)
                 item["status"] = "PUBLISHED"
@@ -187,6 +250,7 @@ def check_and_publish_due_posts(wait_threshold_sec=300):
                 changed = True
             except Exception as e:
                 log(f"ERROR publishing [{item['product_code']}]: {e}")
+                item["status"] = "FAILED"
                 item["last_error"] = str(e)
                 item["last_attempt"] = datetime.datetime.now().isoformat()
                 changed = True
