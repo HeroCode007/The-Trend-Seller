@@ -113,37 +113,56 @@ def publish_item(item):
         log(f"Container created successfully! ID: {container_id}")
 
         if is_reel:
-            log("Waiting for Instagram video encoding/processing...")
-            for attempt in range(15):
-                time.sleep(4)
+            log("Waiting for Instagram video encoding/processing (up to 4 minutes)...")
+            reel_ready = False
+            code = "UNKNOWN"
+            for attempt in range(45):
+                time.sleep(5)
                 status_req = urllib.request.Request(
                     f"https://graph.instagram.com/v21.0/{container_id}?fields=status_code,status&access_token={TOKEN}"
                 )
                 s_res = make_request_with_retries(status_req)
                 code = s_res.get("status_code")
-                log(f"Reel Status Check {attempt+1}: {code}")
+                log(f"Reel Status Check {attempt+1}/45: {code}")
                 if code == "FINISHED":
+                    reel_ready = True
                     break
                 elif code == "ERROR":
                     raise Exception(f"Instagram video encoding error: {s_res}")
+
+            if not reel_ready:
+                raise Exception(f"Instagram video encoding timed out after 225 seconds (status: {code}). Container ID: {container_id}")
         else:
             # Small safety pause for Instagram photo processing
             time.sleep(4)
 
-        # Step 2: Publish Container
+        # Step 2: Publish Container with resilient retry for video readiness
         log("Step 2: Publishing container to feed...")
         pub_payload = {
             "creation_id": container_id,
             "access_token": TOKEN
         }
-        pub_req = urllib.request.Request(
-            f"https://graph.instagram.com/v21.0/{ACCOUNT_ID}/media_publish",
-            data=json.dumps(pub_payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
-        )
-        pub_res = make_request_with_retries(pub_req)
-        media_id = pub_res["id"]
-        log(f"Published successfully! Media ID: {media_id}")
+        pub_req_data = json.dumps(pub_payload).encode("utf-8")
+        
+        media_id = None
+        for pub_attempt in range(1, 10):
+            try:
+                pub_req = urllib.request.Request(
+                    f"https://graph.instagram.com/v21.0/{ACCOUNT_ID}/media_publish",
+                    data=pub_req_data,
+                    headers={"Content-Type": "application/json"}
+                )
+                pub_res = make_request_with_retries(pub_req)
+                media_id = pub_res["id"]
+                log(f"Published successfully! Media ID: {media_id}")
+                break
+            except Exception as e:
+                err_str = str(e)
+                if ("2207027" in err_str or "not ready for publishing" in err_str.lower()) and pub_attempt < 9:
+                    log(f"Media container processing on Instagram servers on attempt {pub_attempt}/9. Waiting 10s...")
+                    time.sleep(10)
+                else:
+                    raise e
 
         # Step 3: Fetch Permalink
         log("Step 3: Fetching live permalink...")
