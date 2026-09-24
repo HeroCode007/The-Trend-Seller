@@ -19,15 +19,11 @@ stories = [
         "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-nano-mens-reviews.jpg"
     },
     {
-        "name": "Story 3: Men's Luxury Client Reviews with Product Thumbs (Official Logo)",
-        "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-reviews-mens.jpg"
+        "name": "Story 3: Nano Banana Ladies Luxury & Gift Sets Reviews (Official Logo)",
+        "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-nano-ladies-reviews.jpg"
     },
     {
-        "name": "Story 4: Women's Luxury & Gift Sets Reviews (Official Logo)",
-        "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-reviews-womens.jpg"
-    },
-    {
-        "name": "Story 5: Real WhatsApp Unboxing & Client Chat Proof (Official Logo)",
+        "name": "Story 4: Real WhatsApp Unboxing & Client Chat Proof (Official Logo)",
         "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-reviews-whatsapp.jpg"
     }
 ]
