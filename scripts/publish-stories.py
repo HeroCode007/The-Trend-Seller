@@ -8,22 +8,26 @@ sys.stdout.reconfigure(encoding='utf-8')
 TOKEN = "IGAAoQCwwUk5ZABZAFloUDFqc0Q5Ym9wU2tvbk1tdGhvb1N3Nl8ySkdXdlhCclE4R1Bqa2tJN21XN3ZA6bVdmcndrSlNHLUE3a2hubnN0Nnhlb1lRbHVaMkxoZATNvQ3UzcU1sa0ZARVHZA5RGN6a25FY3ZAEd0lNSldjeHFXQW9RcXdJTQZDZD"
 ACCOUNT_ID = "17841404898221435"
 
-# 4 Stories ready for the "Authenticity" Highlight
+# 6 Stories ready for the "Authenticity" Highlight (Featuring Official Logo)
 stories = [
     {
-        "name": "Story 1: 100% Open Parcel Trust & Doorstep Inspection Policy",
-        "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-trust-open-parcel.jpg"
+        "name": "Story 1: Nano Banana 100% Open Parcel Policy (Official Logo)",
+        "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-nano-open-parcel.jpg"
     },
     {
-        "name": "Story 2: Men's Luxury Client Reviews (Tissot, TOMI, AP)",
+        "name": "Story 2: Nano Banana Client Reviews & 4.9/5 Rating (Official Logo)",
+        "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-nano-mens-reviews.jpg"
+    },
+    {
+        "name": "Story 3: Men's Luxury Client Reviews with Product Thumbs (Official Logo)",
         "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-reviews-mens.jpg"
     },
     {
-        "name": "Story 3: Women's Luxury & Gift Sets Reviews (Oliya, Cartier, Couple)",
+        "name": "Story 4: Women's Luxury & Gift Sets Reviews (Official Logo)",
         "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-reviews-womens.jpg"
     },
     {
-        "name": "Story 4: Real WhatsApp Unboxing & Client Chat Proof",
+        "name": "Story 5: Real WhatsApp Unboxing & Client Chat Proof (Official Logo)",
         "url": "https://raw.githubusercontent.com/HeroCode007/The-Trend-Seller/main/public/images/ads/story-reviews-whatsapp.jpg"
     }
 ]

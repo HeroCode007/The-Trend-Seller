@@ -112,16 +112,15 @@ def render_mens_story():
     font_footer = get_font("segoeuib", 24)
     font_cta = get_font("segoeuib", 28)
     
-    # Logo
+    # Official Full Logo Lockup
     try:
-        logo = Image.open("public/logo-icon.png").convert("RGBA")
-        logo = logo.resize((100, 93), Image.Resampling.LANCZOS)
-        img.paste(logo, ((WIDTH - 100) // 2, 85), logo)
+        official_logo = Image.open("public/images/official-logo-transparent.png").convert("RGBA")
+        logo_w = 340
+        logo_h = int(logo_w * official_logo.height / official_logo.width)
+        logo_scaled = official_logo.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
+        img.paste(logo_scaled, ((WIDTH - logo_w) // 2, 60), logo_scaled)
     except Exception as e:
-        print("Logo error:", e)
-        
-    draw.text((WIDTH // 2, 200), "THE TREND SELLER", font=font_brand, fill=(235, 205, 130), anchor="mm")
-    draw.text((WIDTH // 2, 245), "AUTHENTICITY & CLIENT EXPERIENCES", font=font_sub, fill=(180, 150, 95), anchor="mm")
+        print("Official logo error:", e)
     
     # Rating Banner
     draw_rounded_rect(draw, [180, 280, WIDTH - 180, 335], radius=28, fill=(20, 26, 38, 240), outline=(210, 175, 95), width=2)
@@ -241,15 +240,15 @@ def render_womens_story():
     font_footer = get_font("segoeuib", 24)
     font_cta = get_font("segoeuib", 28)
     
+    # Official Full Logo Lockup
     try:
-        logo = Image.open("public/logo-icon.png").convert("RGBA")
-        logo = logo.resize((100, 93), Image.Resampling.LANCZOS)
-        img.paste(logo, ((WIDTH - 100) // 2, 85), logo)
-    except:
-        pass
-        
-    draw.text((WIDTH // 2, 200), "THE TREND SELLER", font=font_brand, fill=(235, 205, 130), anchor="mm")
-    draw.text((WIDTH // 2, 245), "WOMEN'S LUXURY & GIFT REVIEWS", font=font_sub, fill=(180, 150, 95), anchor="mm")
+        official_logo = Image.open("public/images/official-logo-transparent.png").convert("RGBA")
+        logo_w = 340
+        logo_h = int(logo_w * official_logo.height / official_logo.width)
+        logo_scaled = official_logo.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
+        img.paste(logo_scaled, ((WIDTH - logo_w) // 2, 60), logo_scaled)
+    except Exception as e:
+        print("Official logo error:", e)
     
     draw_rounded_rect(draw, [180, 280, WIDTH - 180, 335], radius=28, fill=(20, 26, 38, 240), outline=(210, 175, 95), width=2)
     draw_star_row(draw, 220, 307, count=5, r=10, gap=22, fill=(255, 215, 0))
@@ -365,15 +364,15 @@ def render_whatsapp_story():
     font_meta = get_font("segoeui", 20)
     font_cta = get_font("segoeuib", 28)
     
+    # Official Full Logo Lockup
     try:
-        logo = Image.open("public/logo-icon.png").convert("RGBA")
-        logo = logo.resize((100, 93), Image.Resampling.LANCZOS)
-        img.paste(logo, ((WIDTH - 100) // 2, 85), logo)
-    except:
-        pass
-        
-    draw.text((WIDTH // 2, 200), "THE TREND SELLER", font=font_brand, fill=(235, 205, 130), anchor="mm")
-    draw.text((WIDTH // 2, 245), "AUTHENTICITY & DOORSTEP DELIVERY PROOF", font=font_sub, fill=(180, 150, 95), anchor="mm")
+        official_logo = Image.open("public/images/official-logo-transparent.png").convert("RGBA")
+        logo_w = 340
+        logo_h = int(logo_w * official_logo.height / official_logo.width)
+        logo_scaled = official_logo.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
+        img.paste(logo_scaled, ((WIDTH - logo_w) // 2, 60), logo_scaled)
+    except Exception as e:
+        print("Official logo error:", e)
     
     draw_rounded_rect(draw, [180, 280, WIDTH - 180, 335], radius=28, fill=(20, 26, 38, 240), outline=(210, 175, 95), width=2)
     draw_shield_icon(draw, 220, 307, size=14, fill=(255, 215, 0), width=2)
