@@ -217,3 +217,17 @@
 [2026-09-23 16:10:55] API ERROR: HTTP 400: {"error":{"message":"Media ID is not available","type":"OAuthException","code":9007,"error_subcode":2207027,"is_transient":false,"error_user_title":"Cannot Publish","error_user_msg":"The media is not ready for publishing, please wait for a moment","fbtrace_id":"ABRui_T98zJD2M8qEgi0ZiV"}}
 [2026-09-23 16:10:55] ERROR publishing [TTS-CW-039]: HTTP 400: {"error":{"message":"Media ID is not available","type":"OAuthException","code":9007,"error_subcode":2207027,"is_transient":false,"error_user_title":"Cannot Publish","error_user_msg":"The media is not ready for publishing, please wait for a moment","fbtrace_id":"ABRui_T98zJD2M8qEgi0ZiV"}}
 [2026-09-24 15:30:25] 🛡️ STRICT DUPLICATE PREVENTION: [TTS-SW-056] is ALREADY LIVE on Instagram (https://www.instagram.com/reel/DdrK8hjDSUe/)! Skipping publication to ensure no duplicate.
+[2026-09-25 15:48:59] Due post detected: [TTS-PW-035] scheduled for 2026-09-25T20:00:00+05:00 (Now is 2026-09-25T15:48:58.575933+00:00)
+[2026-09-25 15:48:59] Initiating publication for [TTS-PW-035] TAG Heuer Aquaracer Calibre 5 GMT (UGC Reel)...
+[2026-09-25 15:48:59] Step 1: Creating Instagram REEL media container...
+[2026-09-25 15:49:00] Container created successfully! ID: 18392070172163275
+[2026-09-25 15:49:00] Waiting for Instagram video encoding/processing (up to 4 minutes)...
+[2026-09-25 15:49:05] Reel Status Check 1/45: IN_PROGRESS
+[2026-09-25 15:49:10] Reel Status Check 2/45: IN_PROGRESS
+[2026-09-25 15:49:15] Reel Status Check 3/45: IN_PROGRESS
+[2026-09-25 15:49:20] Reel Status Check 4/45: IN_PROGRESS
+[2026-09-25 15:49:26] Reel Status Check 5/45: FINISHED
+[2026-09-25 15:49:26] Step 2: Publishing container to feed...
+[2026-09-25 15:49:33] Published successfully! Media ID: 18462232540142399
+[2026-09-25 15:49:33] Step 3: Fetching live permalink...
+[2026-09-25 15:49:33] 🎉 LIVE POST URL: https://www.instagram.com/reel/Ddt0bIelRzd/
