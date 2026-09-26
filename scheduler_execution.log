@@ -231,3 +231,26 @@
 [2026-09-25 15:49:33] Published successfully! Media ID: 18462232540142399
 [2026-09-25 15:49:33] Step 3: Fetching live permalink...
 [2026-09-25 15:49:33] 🎉 LIVE POST URL: https://www.instagram.com/reel/Ddt0bIelRzd/
+[2026-09-26 15:44:11] Due post detected: [TTS-WW-067] scheduled for 2026-09-26T20:00:00+05:00 (Now is 2026-09-26T15:44:11.342655+00:00)
+[2026-09-26 15:44:12] Initiating publication for [TTS-WW-067] OLIYA Diamond Emerald-Cut Luxury (UGC Reel)...
+[2026-09-26 15:44:12] Step 1: Creating Instagram REEL media container...
+[2026-09-26 15:44:12] Container created successfully! ID: 18392200432163275
+[2026-09-26 15:44:12] Waiting for Instagram video encoding/processing (up to 4 minutes)...
+[2026-09-26 15:44:18] Reel Status Check 1/45: IN_PROGRESS
+[2026-09-26 15:44:23] Reel Status Check 2/45: IN_PROGRESS
+[2026-09-26 15:44:28] Reel Status Check 3/45: IN_PROGRESS
+[2026-09-26 15:44:33] Reel Status Check 4/45: IN_PROGRESS
+[2026-09-26 15:44:38] Reel Status Check 5/45: IN_PROGRESS
+[2026-09-26 15:44:43] Reel Status Check 6/45: IN_PROGRESS
+[2026-09-26 15:44:49] Reel Status Check 7/45: IN_PROGRESS
+[2026-09-26 15:44:54] Reel Status Check 8/45: IN_PROGRESS
+[2026-09-26 15:44:59] Reel Status Check 9/45: IN_PROGRESS
+[2026-09-26 15:45:04] Reel Status Check 10/45: IN_PROGRESS
+[2026-09-26 15:45:09] Reel Status Check 11/45: IN_PROGRESS
+[2026-09-26 15:45:14] Reel Status Check 12/45: IN_PROGRESS
+[2026-09-26 15:45:20] Reel Status Check 13/45: IN_PROGRESS
+[2026-09-26 15:45:25] Reel Status Check 14/45: FINISHED
+[2026-09-26 15:45:25] Step 2: Publishing container to feed...
+[2026-09-26 15:45:33] Published successfully! Media ID: 18110241059594656
+[2026-09-26 15:45:33] Step 3: Fetching live permalink...
+[2026-09-26 15:45:33] 🎉 LIVE POST URL: https://www.instagram.com/reel/DdwYw-SgAod/
